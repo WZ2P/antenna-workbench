@@ -1,0 +1,1964 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WZ2P Antenna Workbench — HF/VHF Antenna Design &amp; Build Planner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=IBM+Plex+Sans:wght@400;500;600&family=Saira+Condensed:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0e1216;
+  --panel:#161d24;
+  --panel2:#1b242d;
+  --line:#2a3542;
+  --text:#d7dee6;
+  --muted:#8a96a3;
+  --amber:#ffb000;
+  --amber-dim:#b87f0a;
+  --amber-glow:rgba(255,176,0,.45);
+  --good:#57d99a;
+  --warn:#ff7a59;
+  --scope-bg:#0a0f0a;
+  --scope-grid:#1d3320;
+  --focus:#ffd35c;
+}
+[data-theme="light"]{
+  --bg:#eef0f2;
+  --panel:#ffffff;
+  --panel2:#f4f6f8;
+  --line:#d3dae1;
+  --text:#20262d;
+  --muted:#5c6873;
+  --amber:#a06400;
+  --amber-dim:#c07d10;
+  --amber-glow:rgba(160,100,0,.25);
+  --good:#188a56;
+  --warn:#c44a2c;
+  --scope-bg:#101510;
+  --scope-grid:#24402a;
+  --focus:#8a5a00;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'IBM Plex Sans',system-ui,sans-serif;
+  font-size:15px;
+  line-height:1.5;
+}
+header{
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+  padding:18px 28px;border-bottom:1px solid var(--line);
+  background:linear-gradient(180deg,var(--panel) 0%,var(--bg) 100%);
+}
+.brand h1{
+  font-family:'Saira Condensed',sans-serif;font-weight:700;font-size:28px;
+  letter-spacing:.06em;text-transform:uppercase;
+}
+.brand h1 span{color:var(--amber)}
+.brand p{color:var(--muted);font-size:13px;letter-spacing:.04em}
+.hdr-right{display:flex;align-items:center;gap:14px}
+.readout{
+  font-family:'Share Tech Mono',monospace;font-size:26px;color:var(--amber);
+  background:var(--scope-bg);border:1px solid var(--line);border-radius:6px;
+  padding:6px 16px;text-shadow:0 0 10px var(--amber-glow);min-width:190px;text-align:right;
+}
+.readout small{font-size:12px;color:var(--muted);text-shadow:none;margin-left:6px}
+button.toggle{
+  background:var(--panel2);border:1px solid var(--line);color:var(--text);
+  border-radius:6px;padding:8px 14px;cursor:pointer;font-family:inherit;font-size:13px;
+}
+button.toggle:hover{border-color:var(--amber-dim)}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+main{display:grid;grid-template-columns:380px 1fr;gap:22px;padding:22px 28px;max-width:1420px;margin:0 auto}
+@media(max-width:980px){main{grid-template-columns:1fr}}
+.card{
+  background:var(--panel);border:1px solid var(--line);border-radius:10px;
+  padding:18px 20px;margin-bottom:18px;
+}
+.card h2{
+  font-family:'Saira Condensed',sans-serif;font-weight:600;font-size:16px;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--amber);
+  border-bottom:1px solid var(--line);padding-bottom:8px;margin-bottom:14px;
+}
+label{display:block;font-size:13.5px;color:var(--muted);letter-spacing:.03em;margin:12px 0 4px;text-transform:uppercase}
+label:first-of-type{margin-top:0}
+select,input[type=number]{
+  width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:6px;
+  color:var(--text);padding:9px 10px;font-family:'Share Tech Mono',monospace;font-size:16px;
+}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.hint{font-size:13.5px;color:var(--muted);margin-top:4px}
+.vf-badge{
+  display:inline-block;margin-top:6px;font-family:'Share Tech Mono',monospace;
+  font-size:14px;color:var(--amber);background:var(--scope-bg);
+  border:1px solid var(--line);border-radius:5px;padding:3px 9px;
+}
+.expert-bar{display:flex;align-items:center;gap:10px;margin-top:16px;padding-top:14px;border-top:1px dashed var(--line)}
+.switch{position:relative;width:44px;height:24px;flex:none}
+.switch input{opacity:0;width:100%;height:100%;position:absolute;cursor:pointer;z-index:2}
+.slider{position:absolute;inset:0;background:var(--panel2);border:1px solid var(--line);border-radius:24px;transition:.2s}
+.slider:before{content:"";position:absolute;height:16px;width:16px;left:3px;top:3px;background:var(--muted);border-radius:50%;transition:.2s}
+.switch input:checked + .slider{background:var(--amber-dim);border-color:var(--amber)}
+.switch input:checked + .slider:before{transform:translateX(20px);background:var(--scope-bg)}
+.expert-only{display:none}
+body.expert .expert-only{display:block}
+body.expert .expert-bar .exlabel{color:var(--amber)}
+.dims{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.dim{
+  background:var(--scope-bg);border:1px solid var(--line);border-radius:8px;padding:12px 14px;
+}
+.dim .lbl{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.dim .val{font-family:'Share Tech Mono',monospace;font-size:26px;color:var(--amber);text-shadow:0 0 8px var(--amber-glow);margin:2px 0}
+.dim .sub{font-size:13.5px;color:var(--muted)}
+.scope-wrap{position:relative}
+canvas#scope{width:100%;height:auto;background:var(--scope-bg);border:1px solid var(--line);border-radius:8px;display:block}
+.legend{display:flex;gap:18px;font-size:14px;color:var(--muted);margin-top:8px;flex-wrap:wrap}
+.legend .key{display:inline-block;width:22px;height:0;border-top:2.5px solid var(--amber);margin-right:6px;vertical-align:middle}
+.legend .key.dash{border-top-style:dashed;border-top-color:var(--good)}
+.legend .key.toa{border-top-color:var(--warn)}
+svg.schematic{width:100%;height:auto;display:block;background:var(--scope-bg);border:1px solid var(--line);border-radius:8px}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line)}
+th{color:var(--muted);font-size:13px;text-transform:uppercase;letter-spacing:.06em}
+td.num{font-family:'Share Tech Mono',monospace;color:var(--amber)}
+.adv p{margin-bottom:10px;font-size:15px}
+.adv p b{color:var(--amber)}
+.adv .flag{color:var(--warn);font-weight:600}
+.adv .ok{color:var(--good);font-weight:600}
+ul.mat{list-style:none}
+ul.mat li{padding:7px 0;border-bottom:1px dashed var(--line);font-size:15px;display:flex;justify-content:space-between;gap:12px}
+ul.mat li span.q{font-family:'Share Tech Mono',monospace;color:var(--amber);white-space:nowrap}
+.note{font-size:13.5px;color:var(--muted);margin-top:10px;border-left:3px solid var(--amber-dim);padding-left:10px}
+footer{padding:16px 28px 30px;color:var(--muted);font-size:12px;text-align:center}
+.tabbar{
+  display:flex;gap:6px;margin-bottom:16px;position:sticky;top:0;z-index:20;
+  background:var(--bg);padding:10px 0 12px;border-bottom:1px solid var(--line);
+}
+.tabbtn{
+  flex:1;background:var(--panel);border:1px solid var(--line);color:var(--muted);
+  border-radius:8px;padding:10px 6px;cursor:pointer;font-family:'Saira Condensed',sans-serif;
+  font-size:15px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;
+}
+.tabbtn:hover{border-color:var(--amber-dim);color:var(--text)}
+.tabbtn.active{background:var(--scope-bg);border-color:var(--amber);color:var(--amber);text-shadow:0 0 8px var(--amber-glow)}
+.tabhide{display:none !important}
+canvas.mini{width:100%;height:auto;background:var(--scope-bg);border:1px solid var(--line);border-radius:8px;display:block}
+input[type=range]{width:100%;accent-color:var(--amber)}
+.recipe h3{font-family:'Saira Condensed',sans-serif;font-size:16px;letter-spacing:.08em;text-transform:uppercase;color:var(--text);margin:14px 0 6px}
+.recipe h3:first-child{margin-top:0}
+.recipe p{font-size:15px;margin-bottom:6px}
+.recipe .num{font-family:'Share Tech Mono',monospace;color:var(--amber)}
+.verdict-ok{color:var(--good);font-weight:600}
+.verdict-warn{color:var(--warn);font-weight:600}
+.overlay{
+  position:fixed;inset:0;background:rgba(4,8,12,.82);z-index:100;
+  display:flex;align-items:center;justify-content:center;padding:20px;
+}
+.modal{
+  background:var(--panel);border:1px solid var(--amber-dim);border-radius:12px;
+  max-width:480px;width:100%;padding:26px 28px;box-shadow:0 0 60px rgba(255,176,0,.12);
+}
+.modal h2{
+  font-family:'Saira Condensed',sans-serif;font-size:22px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--amber);margin-bottom:6px;
+}
+.modal p.sub{color:var(--muted);font-size:14.5px;margin-bottom:14px}
+.modal .btnrow{display:flex;gap:10px;margin-top:20px}
+.modal button.primary{
+  flex:1;background:var(--amber);border:none;color:#141414;font-weight:600;
+  border-radius:8px;padding:12px;cursor:pointer;font-family:'Saira Condensed',sans-serif;
+  font-size:16px;letter-spacing:.08em;text-transform:uppercase;
+}
+.modal button.primary:hover{background:var(--focus)}
+.modal button.ghost{
+  background:none;border:1px solid var(--line);color:var(--muted);border-radius:8px;
+  padding:12px 16px;cursor:pointer;font-size:13px;
+}
+.modal .remember{font-size:13px;color:var(--muted);margin-top:12px}
+/* ---- OLD MAN MODE: maximum readability, maximum curmudgeon ---- */
+body.oldman{font-size:18px}
+body.oldman label{font-size:15.5px}
+body.oldman select,body.oldman input[type=number]{font-size:19px;padding:12px}
+body.oldman .hint,body.oldman .note{font-size:16px}
+body.oldman .dim .val{font-size:36px}
+body.oldman .dim .lbl{font-size:15px}
+body.oldman .dim .sub{font-size:15.5px}
+body.oldman table{font-size:18px}
+body.oldman th{font-size:15px}
+body.oldman .adv p,body.oldman ul.mat li,body.oldman .recipe p{font-size:18px}
+body.oldman .legend{font-size:17px}
+body.oldman svg.schematic text{font-size:28px !important}
+body.oldman .card h2{font-size:19px}
+body.oldman .tabbtn{font-size:18px}
+#omQuip{
+  display:none;margin:12px 28px 0;padding:10px 16px;border:1px dashed var(--amber-dim);
+  border-radius:8px;color:var(--amber);font-style:italic;font-size:17px;
+  background:var(--scope-bg);cursor:pointer;transition:opacity .35s ease;
+  user-select:none;
+}
+#omQuip.show{display:block}
+#omQuip:hover{border-style:solid}
+@media (prefers-reduced-motion: reduce){ #omQuip{transition:none} }
+/* ---- Print preview: the sheet renders on screen exactly as on paper ---- */
+#printPreview{position:fixed;inset:0;z-index:200;background:rgba(4,8,12,.9);display:flex;flex-direction:column}
+.pp-bar{display:flex;align-items:center;gap:12px;padding:12px 24px;background:var(--panel);border-bottom:1px solid var(--line)}
+.pp-title{font-family:'Saira Condensed',sans-serif;font-size:18px;letter-spacing:.1em;text-transform:uppercase;color:var(--amber)}
+.pp-scroll{overflow:auto;flex:1;padding:24px}
+.pp-paper{background:#fff;max-width:8.5in;margin:0 auto;padding:0.55in;box-shadow:0 8px 40px rgba(0,0,0,.6);border-radius:3px}
+#printSheet{color:#000;font-family:'IBM Plex Sans',system-ui,sans-serif}
+#printSheet .ps-hd{border-bottom:2.5px solid #000;padding-bottom:8px;margin-bottom:12px}
+#printSheet h1{font-family:'Saira Condensed',sans-serif;font-size:24px;letter-spacing:.06em;text-transform:uppercase;margin:0;color:#000}
+#printSheet .ps-sub{font-size:13px;color:#333;margin-top:2px}
+#printSheet h2{font-family:'Saira Condensed',sans-serif;font-size:15px;letter-spacing:.1em;text-transform:uppercase;border-bottom:1px solid #000;margin:12px 0 6px;padding-bottom:3px;color:#000}
+#printSheet .ps-dims{display:grid;grid-template-columns:repeat(3,1fr);gap:6px 14px;font-size:13px}
+#printSheet .ps-dims b{font-family:'Share Tech Mono',monospace;font-size:16px;display:block}
+#printSheet svg{width:100%;height:auto;max-height:3.1in;background:#fff;border:1px solid #000;border-radius:4px}
+#printSheet svg text{fill:#000 !important}
+#printSheet svg line,#printSheet svg rect,#printSheet svg path{stroke:#000 !important}
+#printSheet svg circle{stroke:#000 !important;fill:#fff}
+#printSheet svg circle[r="2.5"]{fill:#000}
+#printSheet svg circle[r="6"]{fill:#000 !important;stroke:#000 !important}
+#printSheet svg line[stroke-dasharray]{stroke:#555 !important}
+#printSheet svg rect[fill]{fill:#666}
+#printSheet ul{list-style:none;padding:0;margin:0;column-count:2;column-gap:24px;font-size:13px}
+#printSheet ul li{padding:3px 0;border-bottom:1px dotted #999;break-inside:avoid;display:flex;justify-content:space-between;gap:10px}
+#printSheet ul li span:last-child{font-family:'Share Tech Mono',monospace;white-space:nowrap}
+#printSheet .ps-feed{font-size:13px;margin-top:4px}
+#printSheet .ps-ft{font-size:11px;color:#444;margin-top:12px;border-top:1px solid #000;padding-top:6px}
+@media print{
+  body > *:not(#printPreview){display:none !important}
+  body{background:#fff}
+  #printPreview{position:static;display:block !important;background:none}
+  .pp-bar{display:none !important}
+  .pp-scroll{overflow:visible;padding:0}
+  .pp-paper{box-shadow:none;max-width:none;padding:0;border-radius:0}
+  @page{margin:0.5in}
+  #printSheet *{page-break-inside:avoid}
+}
+
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <h1><span>WZ2P</span> Antenna <span>Workbench</span></h1>
+    <p>HF / VHF antenna design &amp; build planner · dimensions · matching · patterns · Software written by WZ2P Rich Leland, NC</p>
+  </div>
+  <div class="hdr-right">
+    <div class="readout" id="freqReadout">14.200 <small>MHz</small></div>
+    <button class="toggle" id="printBtn" aria-label="Print a one-page build plan">🖨 Print Plan</button>
+    <button class="toggle" id="omBtn" aria-label="Show a random ham radio joke" title="One joke per press. Tar Heels beware.">🎲 Surprise me!</button>
+    <button class="toggle" id="mailBtn" aria-label="Email this design to WZ2P" style="border-color:var(--amber-dim);color:var(--amber)">✉ Email WZ2P</button>
+    <button class="toggle" id="themeBtn" aria-label="Toggle light or dark theme">Light</button>
+  </div>
+</header>
+
+<div id="omQuip" role="status"></div>
+<div id="mailToast" role="status" style="display:none;margin:10px 28px 0;padding:10px 16px;border:1px solid var(--amber-dim);border-radius:8px;background:var(--scope-bg);color:var(--text);font-size:15px"></div>
+<main>
+<!-- ============ LEFT: INPUTS ============ -->
+<section>
+  <div class="card">
+    <h2>1 · Operating Frequency</h2>
+    <label for="band">Band preset</label>
+    <select id="band">
+      <option value="1.9">160 m — 1.9 MHz</option>
+      <option value="3.6">80 m — 3.6 MHz</option>
+      <option value="7.15">40 m — 7.15 MHz</option>
+      <option value="10.125">30 m — 10.125 MHz</option>
+      <option value="14.2" selected>20 m — 14.2 MHz</option>
+      <option value="18.1">17 m — 18.1 MHz</option>
+      <option value="21.3">15 m — 21.3 MHz</option>
+      <option value="24.95">12 m — 24.95 MHz</option>
+      <option value="28.4">10 m — 28.4 MHz</option>
+      <option value="50.3">6 m — 50.3 MHz</option>
+      <option value="146">2 m — 146 MHz</option>
+      <option value="435">70 cm — 435 MHz</option>
+    </select>
+    <label for="freq">Design frequency (MHz)</label>
+    <input type="number" id="freq" value="14.200" step="0.001" min="0.1" max="1300">
+  </div>
+
+  <div class="card">
+    <h2>2 · Antenna Type</h2>
+    <label for="atype">Type</label>
+    <select id="atype">
+      <option value="dipole" selected>Half-wave dipole</option>
+      <option value="invv">Inverted-V dipole</option>
+      <option value="efhw">End-fed half-wave (EFHW)</option>
+      <option value="fan">Fan dipole (multi-band)</option>
+      <option value="loop">Full-wave loop (square / quad)</option>
+      <option value="vert">¼-wave vertical / ground plane</option>
+      <option value="yagi3">3-element Yagi beam</option>
+      <optgroup label="VHF/UHF specialists — 10 m &amp; up" id="vhfGroup">
+        <option value="jpole">J-Pole (½-wave + J stub)</option>
+        <option value="slimjim">Slim Jim (folded J)</option>
+        <option value="gp58">⅝-wave ground plane (gain vertical)</option>
+        <option value="moxon">Moxon rectangle (compact 2-el beam)</option>
+      </optgroup>
+    </select>
+    <div id="jExtra" style="display:none">
+      <label for="jConstr">Construction</label>
+      <select id="jConstr">
+        <option value="pipe" selected>Copper pipe / bare rod — VF 0.96</option>
+        <option value="ll450">450 Ω window line (CCS, coated) — VF 0.91</option>
+        <option value="tl300">300 Ω twin-lead ribbon — VF 0.90</option>
+      </select>
+      <p class="hint">Ladder-line insulation slows the wave (velocity factor), so every dimension shrinks. Copper-clad steel conducts like copper at RF (skin effect) — it's the coating that sets the length, not the steel. VFs per M0UKD; solid-ribbon 300 Ω varies (0.85–0.91), so cut long and trim.</p>
+    </div>
+    <div id="vertExtra" style="display:none">
+      <label for="vertMount">Mounting</label>
+      <select id="vertMount">
+        <option value="ground" selected>Ground-mounted (radials on/in ground)</option>
+        <option value="elevated">Elevated — at the feed-point height entered below</option>
+      </select>
+      <p class="hint" id="vertHint">Ground-mounted: the height field is ignored for the pattern (base sits at ground). Elevated: the feed-point height drives both the match and the pattern.</p>
+    </div>
+    <div id="fanExtra" style="display:none">
+      <label for="fan2">Additional band #2</label>
+      <select id="fan2">
+        <option value="7.15" selected>40 m — 7.15 MHz</option>
+        <option value="3.6">80 m — 3.6 MHz</option>
+        <option value="14.2">20 m — 14.2 MHz</option>
+        <option value="21.3">15 m — 21.3 MHz</option>
+        <option value="28.4">10 m — 28.4 MHz</option>
+        <option value="0">— none —</option>
+      </select>
+      <label for="fan3">Additional band #3</label>
+      <select id="fan3">
+        <option value="28.4" selected>10 m — 28.4 MHz</option>
+        <option value="21.3">15 m — 21.3 MHz</option>
+        <option value="14.2">20 m — 14.2 MHz</option>
+        <option value="7.15">40 m — 7.15 MHz</option>
+        <option value="0">— none —</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>3 · Site Constraints (Yard Size)</h2>
+    <div class="row">
+      <div>
+        <label for="span">Available span (ft)</label>
+        <input type="number" id="span" value="70" min="1" step="1">
+      </div>
+      <div>
+        <label for="height">Feed-point height (ft)</label>
+        <input type="number" id="height" value="35" min="1" step="1">
+      </div>
+    </div>
+    <label for="heightSlider" style="display:flex;justify-content:space-between;align-items:baseline">
+      <span>Height — drag to explore</span>
+      <span id="hReadout" class="num" style="font-family:'Share Tech Mono',monospace;color:var(--amber);text-transform:none">35 ft ≈ 0.51 λ</span>
+    </label>
+    <input type="range" id="heightSlider" min="1" max="120" step="1" value="35"
+           aria-label="Feed-point height above ground in feet">
+    <p class="hint">Watch the Patterns tab while you drag — lobes drop, split, and multiply as the antenna climbs.</p>
+    <p class="hint">Span = longest straight run you can string. Height = center / apex / base height above ground. Changes here are remembered on this device.</p>
+    <label for="ground">Ground quality (soil)</label>
+    <select id="ground">
+      <option value="salt">Saltwater / marsh — exceptional</option>
+      <option value="good">Good — moist farmland, low flat terrain</option>
+      <option value="avg" selected>Average — typical pastoral / suburban</option>
+      <option value="poor">Poor — rocky, sandy, urban fill</option>
+    </select>
+    <p class="hint">Soil conductivity shapes low-angle response (huge for verticals) and ground-system loss.</p>
+  </div>
+
+  <div class="card">
+    <h2>4 · Materials &amp; Feed Line</h2>
+    <label for="material">Conductor material</label>
+    <select id="material"></select>
+    <div class="vf-badge" id="vfBadge">VF ≈ 0.951</div>
+    <p class="hint" id="vfHint">Length formulas are scaled by the material's effective velocity factor.</p>
+
+    <label for="gauge">Wire gauge / element size</label>
+    <select id="gauge"></select>
+
+    <label for="fline">Feed line</label>
+    <select id="fline"></select>
+    <label for="flen">Feed line length (ft)</label>
+    <input type="number" id="flen" value="100" min="1" step="1">
+
+    <div class="expert-bar">
+      <div class="switch">
+        <input type="checkbox" id="expertToggle" aria-label="Expert mode">
+        <span class="slider"></span>
+      </div>
+      <span class="exlabel" style="font-size:13px;letter-spacing:.05em;text-transform:uppercase">Expert mode</span>
+    </div>
+
+    <div class="expert-only">
+      <label for="power">TX power — PEP (W)</label>
+      <input type="number" id="power" value="100" min="1" max="1500" step="1">
+      <label for="mode">Primary mode</label>
+      <select id="mode">
+        <option value="0.20" selected>SSB (no processing) — 20% duty</option>
+        <option value="0.40">CW — 40% duty</option>
+        <option value="1.00">FT8 / FM / RTTY — 100% duty</option>
+      </select>
+      <label for="dia">Conductor diameter (inches)</label>
+      <input type="number" id="dia" value="0.0641" step="0.001" min="0.005">
+      <p class="hint">Overrides the gauge preset. Thicker conductors resonate slightly shorter and give wider bandwidth.</p>
+      <div id="invvAngleWrap" style="display:none">
+        <label for="invvAngle">Inverted-V included angle (°)</label>
+        <input type="number" id="invvAngle" value="120" min="90" max="160" step="5">
+      </div>
+      <div id="loopFeedWrap" style="display:none">
+        <label for="loopFeed">Loop feed-point position</label>
+        <select id="loopFeed">
+          <option value="bottom" selected>Bottom center — horizontal polarization</option>
+          <option value="side">Side center — vertical polarization</option>
+          <option value="corner">Bottom corner — mixed / 45° polarization</option>
+        </select>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ RIGHT: RESULTS ============ -->
+<section id="results">
+  <div class="tabbar" role="tablist">
+    <button class="tabbtn active" data-t="build">Build</button>
+    <button class="tabbtn" data-t="patterns">Patterns</button>
+    <button class="tabbtn" data-t="feed">Feed System</button>
+    <button class="tabbtn" data-t="site">Site &amp; Safety</button>
+  </div>
+
+  <div class="card" data-tab="build">
+    <h2 style="display:flex;justify-content:space-between;align-items:center">Build Dimensions
+      <button class="toggle" id="unitBtn" style="font-size:11px;padding:4px 10px;letter-spacing:.05em">METRIC</button>
+    </h2>
+    <div class="dims" id="dims"></div>
+    <p class="note" id="dimNote"></p>
+  </div>
+
+  <div class="card" data-tab="patterns">
+    <h2>Elevation Radiation Pattern</h2>
+    <div class="scope-wrap"><canvas id="scope" width="920" height="470"></canvas></div>
+    <div class="legend">
+      <span><span class="key"></span>Your height (<span id="legUser">35 ft</span>)</span>
+      <span><span class="key dash"></span>Optimal height (<span id="legOpt">—</span>)</span>
+      <span><span class="key toa"></span>Takeoff angle (<span id="legToa">—</span>)</span>
+      <span style="margin-left:auto">Rings: −3 / −10 / −20 dB · image model + soil factor</span>
+    </div>
+    <p class="note" id="dxHop"></p>
+  </div>
+
+  <div class="card" data-tab="patterns">
+    <h2>Azimuth Pattern (top-down)</h2>
+    <div class="scope-wrap"><canvas id="azscope" class="mini" width="920" height="480"></canvas></div>
+    <p class="note" id="azNote"></p>
+  </div>
+
+  <div class="card" data-tab="build">
+    <h2>Schematic</h2>
+    <div id="schematic"></div>
+  </div>
+
+  <div class="card" data-tab="feed">
+    <h2>Feed &amp; Matching</h2>
+    <table id="matchTable"><tbody></tbody></table>
+    <p class="note" id="matchNote"></p>
+  </div>
+
+  <div class="card" id="radialCard" data-tab="feed" style="display:none">
+    <h2>Radial System</h2>
+    <table id="radialTable"><tbody></tbody></table>
+    <p class="note" id="radialNote"></p>
+  </div>
+
+  <div class="card" data-tab="feed">
+    <h2>Feed Line Loss Budget</h2>
+    <table id="lossTable"><tbody></tbody></table>
+    <div class="expert-only" style="margin-top:14px;padding-top:12px;border-top:1px dashed var(--line)">
+      <label for="swrIn">Operating SWR at the antenna: <span id="swrLbl" class="num" style="color:var(--amber)">1.5:1</span></label>
+      <input type="range" id="swrIn" min="1" max="10" step="0.5" value="1.5">
+      <table id="swrLossTable" style="margin-top:8px"><tbody></tbody></table>
+    </div>
+  </div>
+
+  <div class="card expert-only" data-tab="feed">
+    <h2>Predicted SWR Curve</h2>
+    <div class="scope-wrap"><canvas id="swrscope" class="mini" width="920" height="300"></canvas></div>
+    <p class="note" id="swrNote"></p>
+  </div>
+
+  <div class="card expert-only" data-tab="feed">
+    <h2>Expert · Bandwidth &amp; Impedance</h2>
+    <table id="expertTable"><tbody></tbody></table>
+    <p class="note">Estimates for a resonant antenna in the clear. Nearby structures, ground quality, and height will shift these — always trim on-site with an analyzer.</p>
+  </div>
+
+  <div class="card expert-only" data-tab="build">
+    <h2>Construction Recipes</h2>
+    <div class="recipe" id="recipes"></div>
+    <p class="note">Computed starting values — the last 5% is always trimmed on the bench with an analyzer.</p>
+  </div>
+
+  <div class="card expert-only" data-tab="site">
+    <h2>Wire Sag &amp; Tension</h2>
+    <table id="sagTable"><tbody></tbody></table>
+    <p class="note" id="sagNote"></p>
+  </div>
+
+  <div class="card expert-only" data-tab="site">
+    <h2>FCC RF Exposure (OET-65 estimate)</h2>
+    <table id="rfTable"><tbody></tbody></table>
+    <p class="note">Far-field estimate per FCC OET Bulletin 65 with 2.56× ground-reflection factor and 50% transmit time. Every US station must perform an RF exposure evaluation — this is a screening estimate, not a substitute for the full worksheet in near-field situations (closer than ~λ/2π).</p>
+  </div>
+
+  <div class="card" data-tab="site">
+    <h2>Site Advisor</h2>
+    <div class="adv" id="advisor"></div>
+  </div>
+
+  <div class="card" data-tab="build">
+    <h2>Materials List</h2>
+    <ul class="mat" id="mats"></ul>
+    <p class="note">Wire lengths include ~10 % extra for trimming, wraps, and insulator loops. Always cut long and prune to resonance.</p>
+  </div>
+</section>
+</main>
+
+<div class="overlay" id="siteModal" style="display:none" role="dialog" aria-modal="true" aria-labelledby="smTitle">
+  <div class="modal">
+    <h2 id="smTitle">Welcome — tell me about your yard</h2>
+    <p class="sub">One quick question and every design will be tailored to what you can actually put up. You can change these anytime in Site Constraints.</p>
+    <label for="smSpan">Longest straight run available (ft)</label>
+    <input type="number" id="smSpan" value="70" min="1" step="1">
+    <label for="smHeight">Typical support height you can reach (ft)</label>
+    <input type="number" id="smHeight" value="35" min="1" step="1">
+    <label for="smGround">Soil in your area</label>
+    <select id="smGround">
+      <option value="salt">Saltwater / marsh</option>
+      <option value="good">Good — moist farmland</option>
+      <option value="avg" selected>Average — suburban / pastoral</option>
+      <option value="poor">Poor — rocky, sandy, urban</option>
+    </select>
+    <div class="btnrow">
+      <button class="primary" id="smSave">Save &amp; start designing</button>
+      <button class="ghost" id="smSkip">Skip</button>
+    </div>
+    <p class="remember">Saved on this device — next time the Workbench opens ready to go.</p>
+  </div>
+</div>
+
+<div class="overlay" id="printModal" style="display:none" role="dialog" aria-modal="true" aria-labelledby="pmTitle">
+  <div class="modal">
+    <h2 id="pmTitle">Print Build Plan</h2>
+    <p class="sub">One page: the drawing, the cut dimensions, and the shopping list. Which measurements?</p>
+    <div class="btnrow">
+      <button class="primary" id="pmUS">US — FT / IN</button>
+      <button class="primary" id="pmMetric">Metric — m / cm</button>
+    </div>
+    <div class="btnrow" style="margin-top:10px">
+      <button class="ghost" id="pmCancel" style="flex:1">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div id="printPreview" style="display:none" role="dialog" aria-modal="true" aria-label="Print preview">
+  <div class="pp-bar">
+    <span class="pp-title">Print Preview — Build Plan</span>
+    <span style="flex:1"></span>
+    <button class="toggle" id="ppPrint" style="border-color:var(--amber);color:var(--amber);font-size:15px;padding:10px 22px">🖨 Print</button>
+    <button class="toggle" id="ppBack" style="font-size:15px;padding:10px 18px">← Back</button>
+  </div>
+  <div class="pp-scroll"><div class="pp-paper"><div id="printSheet"></div></div></div>
+</div>
+
+<footer>WZ2P Antenna Workbench v2.0 · Software written by WZ2P Rich Leland, NC · Dimensions from 468/f, 234/f &amp; 1005/f classics with material and diameter corrections · Coax loss coefficients fitted to Times Microwave / published attenuation tables · Elevation patterns validated against NEC-2 (EZNEC engine) within ~1° over perfect ground — real terrain will vary. 73!</footer>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+
+/* ---------- Reference data ---------- */
+const MATERIALS = {
+  bare_copper:      {name:"Bare copper wire",          k:1.000, wire:true},
+  insulated_copper: {name:"Insulated copper wire",     k:0.970, wire:true},
+  copperweld:       {name:"Copper-clad steel wire",    k:1.000, wire:true},
+  stainless:        {name:"Stainless steel wire",      k:0.990, wire:true},
+  aluminum:         {name:"Aluminum tubing / rod",     k:0.985, wire:false}
+};
+const BASE_VF = 468/492; // ≈0.951 end-effect factor already baked into 468/f
+
+const GAUGES = {
+  "12":{name:"12 AWG (0.081″)", d:0.0808},
+  "14":{name:"14 AWG (0.064″)", d:0.0641},
+  "16":{name:"16 AWG (0.051″)", d:0.0508},
+  "18":{name:"18 AWG (0.040″)", d:0.0403},
+  "20":{name:"20 AWG (0.032″)", d:0.0320},
+  "t375":{name:"3/8″ tubing", d:0.375},
+  "t500":{name:"1/2″ tubing", d:0.500},
+  "t750":{name:"3/4″ tubing", d:0.750}
+};
+
+/* matched loss = k1·√f + k2·f  dB per 100 ft — same form as the Times Microwave
+   datasheet formula. LMR-400 uses TMS's exact published coefficients; the rest are
+   fitted to published attenuation tables (typ. within ±5% across HF, ±10% at VHF). */
+const FEEDLINES = {
+  rg58:    {name:"RG-58 coax (50 Ω)",        k1:0.433,  k2:0.0032,  z:50,  bal:false},
+  rg8x:    {name:"RG-8X / Mini-8 (50 Ω)",    k1:0.235,  k2:0.0078,  z:50,  bal:false},
+  rg213:   {name:"RG-213 coax (50 Ω)",       k1:0.162,  k2:0.0040,  z:50,  bal:false},
+  lmr400:  {name:"LMR-400 (50 Ω)",           k1:0.12229,k2:0.00026, z:50,  bal:false},
+  rg6:     {name:"RG-6 coax (75 Ω)",         k1:0.174,  k2:0.0021,  z:75,  bal:false},
+  ladder:  {name:"450 Ω ladder line",        k1:0.030,  k2:0.0008,  z:450, bal:true},
+  twin:    {name:"300 Ω twin-lead",          k1:0.055,  k2:0.0020,  z:300, bal:true}
+};
+
+/* soil models: r = ground reflection magnitude for horizontal antennas,
+   ex = low-angle softening exponent for verticals, loss = est. ground-system dB
+   for a ground-mounted vertical at the starred radial tier */
+const GROUNDS = {
+  salt:{name:"Saltwater",       r:0.97, ex:0.04, loss:0.3},
+  good:{name:"Good soil",       r:0.90, ex:0.10, loss:1.0},
+  avg: {name:"Average soil",    r:0.82, ex:0.16, loss:2.0},
+  poor:{name:"Poor soil",       r:0.72, ex:0.24, loss:3.5}
+};
+/* soft-drawn copper mechanics: weight lb/ft, breaking strength lb */
+const WIREMECH = {
+  "12":{w:0.0198, brk:164}, "14":{w:0.0124, brk:103},
+  "16":{w:0.0078, brk:65},  "18":{w:0.0049, brk:41}, "20":{w:0.0031, brk:26}
+};
+const BANDS = [[1.8,2.0],[3.5,4.0],[7.0,7.3],[10.1,10.15],[14.0,14.35],[18.068,18.168],
+               [21.0,21.45],[24.89,24.99],[28.0,29.7],[50,54],[144,148],[420,450]];
+const bandEdges = f => BANDS.find(([a,b])=>f>=a&&f<=b) || [f*0.975, f*1.025];
+/* single-hop distance via F2 layer (~300 km) for a given elevation angle */
+function hopKm(elDeg, layerKm=300){
+  const Re=6371, t=elDeg*Math.PI/180;
+  const psi=Math.acos((Re/(Re+layerKm))*Math.cos(t))-t;
+  return 2*Re*psi;
+}
+const BANDNAME = f => {
+  const t=[[1.8,2.0,"160 m"],[3.5,4.0,"80 m"],[7.0,7.3,"40 m"],[10.1,10.15,"30 m"],
+  [14.0,14.35,"20 m"],[18.068,18.168,"17 m"],[21.0,21.45,"15 m"],[24.89,24.99,"12 m"],
+  [28.0,29.7,"10 m"],[50,54,"6 m"],[144,148,"2 m"],[420,450,"70 cm"]];
+  for(const [a,b,n] of t) if(f>=a && f<=b) return n;
+  return f.toFixed(3)+" MHz";
+};
+
+/* ---------- Populate selects ---------- */
+(function init(){
+  const m=$("material");
+  for(const [k,v] of Object.entries(MATERIALS)){
+    const o=document.createElement("option"); o.value=k; o.textContent=v.name; m.appendChild(o);
+  }
+  const g=$("gauge");
+  for(const [k,v] of Object.entries(GAUGES)){
+    const o=document.createElement("option"); o.value=k; o.textContent=v.name; g.appendChild(o);
+  }
+  g.value="14";
+  const f=$("fline");
+  for(const [k,v] of Object.entries(FEEDLINES)){
+    const o=document.createElement("option"); o.value=k; o.textContent=v.name; f.appendChild(o);
+  }
+  f.value="rg8x";
+})();
+
+/* ---------- Helpers ---------- */
+let METRIC=false;
+const ftIn = ft => {
+  const sign = ft<0?"−":""; ft=Math.abs(ft);
+  if(METRIC){
+    const m=ft*0.3048;
+    return sign+(m<1 ? (m*100).toFixed(1)+" cm" : m.toFixed(2)+" m");
+  }
+  if(ft<1) return sign+(ft*12).toFixed(1)+"″";
+  const w=Math.floor(ft), inch=(ft-w)*12;
+  return sign+w+"′ "+inch.toFixed(1)+"″";
+};
+/* plain length: "32.96 ft" or "10.05 m" */
+const ftS = (ft,d=2) => METRIC ? (ft*0.3048).toFixed(d)+" m" : Number(ft).toFixed(d)+" ft";
+const fmt = (x,d=2)=>Number(x).toFixed(d);
+
+/* diameter correction: normalized so 14 AWG at HF ≈ published 468/f */
+function diaCorrection(freq, dIn){
+  const lambdaIn = (983.571/freq)*12;
+  const ratio = Math.max(lambdaIn/Math.max(dIn,1e-4),20);
+  const K = 0.96 + 0.008*Math.log10(ratio/100);   // empirical end-effect trend
+  const Kref = 0.96 + 0.008*Math.log10((lambdaIn/0.0641)/100);
+  return Math.min(Math.max(K/Kref,0.90),1.03);
+}
+
+/* ---------- Core antenna math ---------- */
+function designAntenna(p){
+  const {freq, type, matK, dCorr} = p;
+  const k = matK*dCorr;
+  const lam = 983.571/freq;                 // free-space wavelength, ft
+  const D = {dims:[], mats:[], pol:"H", elemFactor:null, wireFt:0,
+             feedZ:"~70 Ω", balun:"1:1 current balun (choke)", pattern:"halfdipole",
+             optH: lam/2, name:"", schematic:""};
+
+  if(type==="dipole"){
+    const L=(468/freq)*k, leg=L/2;
+    D.name="Half-wave dipole";
+    D.dims=[
+      {l:"Total length",v:ftIn(L),s:ftS(L)},
+      {l:"Each leg",v:ftIn(leg),s:ftS(leg)},
+      {l:"Wavelength",v:ftS(lam,1),s:BANDNAME(freq)}
+    ];
+    D.wireFt=L; D.span=L; D.feedZ="~70 Ω (drops toward 50 Ω at low height)";
+    D.schematic=svgDipole(L,leg,false);
+    D.mats=[["Antenna wire", ftS(L*1.1,0)],["Center insulator w/ SO-239 or eyelets","1"],
+            ["End insulators","2"],["1:1 current balun / feed-line choke","1"],
+            ["Dacron support rope","2 × height + slack"]];
+  }
+
+  else if(type==="invv"){
+    const ang = p.invvAngle||120;
+    const droop=(180-ang)/2*Math.PI/180;
+    const L=(468/freq)*k*0.98*(ang<110?0.985:1); // slight shortening from droop coupling
+    const leg=L/2, span=L*Math.cos(droop), drop=(L/2)*Math.sin(droop);
+    D.name="Inverted-V dipole ("+ang+"° included)";
+    D.dims=[
+      {l:"Total wire",v:ftIn(L),s:ftS(L)},
+      {l:"Each leg",v:ftIn(leg),s:ftS(leg)},
+      {l:"Horizontal span",v:ftIn(span),s:"tip-to-tip footprint"},
+      {l:"Apex above ends",v:ftIn(drop),s:"vertical drop per side"}
+    ];
+    D.wireFt=L; D.span=span; D.feedZ="~50 Ω (the droop lowers Z — a great coax match)";
+    D.schematic=svgInvV(L,leg,ang);
+    D.mats=[["Antenna wire",ftS(L*1.1,0)],["Center insulator","1"],["End insulators","2"],
+            ["1:1 current balun / choke","1"],["Single center support (mast/tree)","1"],
+            ["Rope for leg tie-offs","2"]];
+  }
+
+  else if(type==="efhw"){
+    const L=(468/freq)*k;
+    const cp=lam*0.05;
+    D.name="End-fed half-wave";
+    D.dims=[
+      {l:"Radiator length",v:ftIn(L),s:ftS(L)},
+      {l:"Counterpoise",v:ftIn(cp),s:"0.05 λ minimum"},
+      {l:"Wavelength",v:ftS(lam,1),s:BANDNAME(freq)}
+    ];
+    D.wireFt=L+cp; D.span=L;
+    D.feedZ="~2,450 Ω at the end (≈49 × 50 Ω)";
+    D.balun="49:1 unun at the feed + common-mode choke ~0.05 λ down the coax";
+    D.schematic=svgEFHW(L,cp);
+    D.mats=[["Antenna wire",ftS((L+cp)*1.1,0)],["49:1 unun (e.g., FT-240-43 core, 2:14 turns)","1"],
+            ["Common-mode choke","1"],["End insulator","1"],["Support rope","as needed"]];
+  }
+
+  else if(type==="fan"){
+    const bands=[freq];
+    if(p.fan2>0) bands.push(p.fan2);
+    if(p.fan3>0) bands.push(p.fan3);
+    bands.sort((a,b)=>a-b);
+    D.name="Fan dipole ("+bands.map(BANDNAME).join(" / ")+")";
+    let wire=0;
+    bands.forEach((f,i)=>{
+      const L=(468/f)*k;
+      wire+=L;
+      D.dims.push({l:BANDNAME(f)+" element",v:ftIn(L),s:"each leg "+ftIn(L/2)});
+    });
+    D.wireFt=wire; D.span=(468/bands[0])*k;
+    D.feedZ="~50–70 Ω (all elements share one feed point)";
+    D.balun="1:1 current balun at the common feed";
+    D.optH=(983.571/bands[0])/2;
+    D.schematic=svgFan(bands.map(f=>(468/f)*k));
+    D.mats=[["Antenna wire",ftS(wire*1.1,0)],["Center insulator (multi-tap)","1"],
+            ["End insulators",String(bands.length*2)],["Spreaders (3–4 ft, PVC/fiberglass)",String(Math.max(bands.length-1,1)*2)],
+            ["1:1 current balun","1"]];
+    D.dimNote="Tune the lowest band first — longer elements detune shorter ones slightly. Spread element ends 2–4 ft apart.";
+  }
+
+  else if(type==="loop"){
+    const L=(1005/freq)*k;
+    const side=L/4;
+    const fp=p.loopFeed||"bottom";
+    D.name="Full-wave loop (square)";
+    D.pol = fp==="side"?"V":(fp==="corner"?"M":"H");
+    D.dims=[
+      {l:"Loop circumference",v:ftIn(L),s:ftS(L)},
+      {l:"Each side (square)",v:ftIn(side),s:ftS(side)},
+      {l:"Feed point",v:fp==="bottom"?"Bottom ctr":fp==="side"?"Side ctr":"Corner",
+       s:fp==="bottom"?"horizontal pol":fp==="side"?"vertical pol":"mixed 45° pol"}
+    ];
+    D.wireFt=L; D.span=side;
+    D.feedZ="~100–120 Ω";
+    D.balun="2:1 balun ideal (4:1 workable); with ladder line, feed direct to a balanced tuner";
+    D.schematic=svgLoop(side,fp);
+    D.mats=[["Antenna wire",ftS(L*1.08,0)],["Corner insulators/supports","4"],
+            ["2:1 (or 4:1) balun","1"],["Support rope","4"]];
+  }
+
+  else if(type==="gp" || type==="vert"){
+    const R=(234/freq)*k;
+    const rad=R*1.05;
+    const elevated = type==="gp";
+    if(elevated){
+      D.radialPlan=[
+        ["Maximum efficiency","4 resonant radials × "+ftIn(rad)+" (drooped ~45°)","≈"+ftS(rad*4,0)+" wire","Equals a large buried field — elevated resonant radials are that good (N6LF measurements)"],
+        ["Reasonable alternative","2 resonant radials, opposite each other","≈"+ftS(rad*2,0)+" wire","Within ~0.5 dB; slight pattern skew toward the radials"]
+      ];
+      D.radialNote="Keep the feed point at least 0.1 λ ("+ftIn(lam*0.1)+") above ground for elevated radials to work their magic. Tune radials for lowest SWR — they're half the antenna.";
+    }else{
+      D.radialPlan=[
+        ["Maximum efficiency","120 × "+ftIn(lam*0.4),ftS(120*lam*0.4,0)+" wire","AM-broadcast standard — the reference (0 dB); overkill for most hams"],
+        ["Excellent","60 × "+ftIn(lam*0.3),ftS(60*lam*0.3,0)+" wire","Within ~0.2 dB of maximum"],
+        ["★ Best value","32 × "+ftIn(lam*0.2),ftS(32*lam*0.2,0)+" wire","≈ −0.5 dB — the sweet spot of wire-per-dB"],
+        ["Practical minimum","16 × "+ftIn(lam*0.15),ftS(16*lam*0.15,0)+" wire","≈ −1 dB; a fine starting field"],
+        ["Get on the air","8 × "+ftIn(lam*0.1),ftS(8*lam*0.1,0)+" wire","≈ −2 dB; lay more radials any weekend — they add up"]
+      ];
+      D.radialNote="On-ground radials don't need to be resonant — density beats length. Many short radials outperform a few long ones. Lawn staples, let the grass swallow them.";
+    }
+    D.name = elevated?"¼-wave ground-plane (elevated)":"¼-wave vertical (ground-mounted)";
+    D.pol="V"; D.pattern="monopole"; D.optH=elevated?lam*0.25:0;
+    D.dims=[
+      {l:"Vertical radiator",v:ftIn(R),s:ftS(R)},
+      {l:elevated?"Radials (×4, 45° droop)":"Radials (16–32 on ground)",v:ftIn(rad),s:ftS(rad)+" each"},
+      {l:"Wavelength",v:ftS(lam,1),s:BANDNAME(freq)}
+    ];
+    D.wireFt=R+rad*(elevated?4:16);
+    D.span=rad*2;
+    D.feedZ=elevated?"~50 Ω with radials drooped 45°":"~36 Ω (ground losses raise the match toward 50 Ω)";
+    D.balun="None needed (unbalanced) — add a common-mode choke at the feed";
+    D.schematic=svgVert(R,rad,elevated);
+    D.mats=elevated?
+      [["Radiator (wire or tubing)",ftS(R*1.1,0)],["Radial wire",ftS(rad*4*1.05,0)+" (4 radials)"],
+       ["SO-239 mount plate","1"],["Common-mode choke","1"],["Mast/support","1"]]:
+      [["Radiator (wire or tubing)",ftS(R*1.1,0)],["Radial wire (★ tier)",ftS(32*lam*0.2,0)+" (32 × "+ftIn(lam*0.2)+")"],
+       ["Ground stake / base insulator","1"],["Common-mode choke","1"],["Lawn staples for radials","1 bag"]];
+    D.dimNote = elevated?"Drooping the four radials ≈45° raises the feed impedance from 36 Ω to ≈50 Ω.":"More radials beat longer radials: 16 × 0.1 λ outperforms 4 × 0.25 λ over average soil.";
+  }
+
+  else if(type==="yagi3"){
+    const drv=(473/freq)*k, ref=(495/freq)*k, dir=(452/freq)*k;
+    const sp=0.15*lam, boom=2*sp;
+    D.name="3-element Yagi";
+    D.pattern="yagi";
+    D.dims=[
+      {l:"Reflector",v:ftIn(ref),s:ftS(ref)},
+      {l:"Driven element",v:ftIn(drv),s:ftS(drv)},
+      {l:"Director",v:ftIn(dir),s:ftS(dir)},
+      {l:"Element spacing",v:ftIn(sp),s:"0.15 λ each"},
+      {l:"Boom length",v:ftIn(boom),s:"≈0.30 λ + ends"}
+    ];
+    D.wireFt=ref+drv+dir; D.span=ref;
+    D.feedZ="~20–25 Ω at the driven element";
+    D.balun="Gamma match or hairpin (beta) match to 50 Ω + 1:1 choke balun";
+    D.schematic=svgYagi(ref,drv,dir,sp);
+    D.mats=[["Aluminum tubing (elements)",ftS((ref+drv+dir)*1.05,0)],["Boom (2″ tubing)",ftS(boom+2,0)],
+            ["Element-to-boom clamps","3 sets"],["Gamma/hairpin match kit","1"],
+            ["1:1 choke balun","1"],["Mast + rotator","1"]];
+    D.dimNote="Free-space gain ≈ 7–8 dBi, F/B ≈ 15–20 dB. Dimensions are a proven starting point — model or trim for your exact frequency.";
+  }
+
+  else if(type==="jpole"){
+    /* M0UKD form: element = electrical length × construction VF.
+       Bare pipe/rod 0.96; 450 Ω window line 0.91; 300 Ω twin-lead 0.90. */
+    const CONSTR={pipe:{vf:0.96,tapF:1.0},ll450:{vf:0.91,tapF:1.0},tl300:{vf:0.90,tapF:0.78}};
+    const cc=CONSTR[p.jconstr||"pipe"];
+    const lng=lam*0.75*cc.vf, stub=lam*0.25*cc.vf, sp=lam/45;
+    /* feed point: on the shorted ¼-λ stub, Z(x) ≈ R_end·sin²(βx).
+       Solve 50 = 2000·sin²(βx) → x ≈ 0.025 λ, scaled by VF; 300 Ω line's lower
+       stub Z0 pulls the 50 Ω point lower (per published 2 m builds). */
+    const REND=2000;
+    const tap=(lam*cc.vf/(2*Math.PI))*Math.asin(Math.sqrt(50/REND))*cc.tapF;
+    const tapLo=(lam*cc.vf/(2*Math.PI))*Math.asin(Math.sqrt(50/3000))*cc.tapF;
+    const tapHi=(lam*cc.vf/(2*Math.PI))*Math.asin(Math.sqrt(50/1200))*cc.tapF;
+    D.constr=p.jconstr||"pipe"; D.vf=cc.vf;
+    D.name="J-Pole"; D.pol="V"; D.pattern="monopole"; D.monoFrac=0.5; D.optH=lam*0.25;
+    D.noRadials=true;
+    D.dims=[
+      {l:"Long element (¾ λ × "+cc.vf.toFixed(2)+")",v:ftIn(lng),s:ftS(lng)},
+      {l:"J stub (¼ λ × "+cc.vf.toFixed(2)+")",v:ftIn(stub),s:ftS(stub)},
+      {l:"Element spacing",v:D.constr==="pipe"?ftIn(sp):"set by line",s:D.constr==="pipe"?"center-to-center":(D.constr==="ll450"?"≈1″ window line":"≈0.4″ ribbon")},
+      {l:"★ Feed point",v:ftIn(tap),s:"up from the bottom bridge — center conductor to LONG element, shield to stub"},
+      {l:"Tap slide range",v:ftIn(tapLo)+" – "+ftIn(tapHi),s:"final position depends on conductor diameter — sweep within this window"}
+    ];
+    D.wireFt=lng+stub+sp; D.span=Math.max(sp*3,2);
+    D.feedZ="50 Ω at the calculated tap: "+ftIn(tap)+" above the bridge (Z(x) = 2 kΩ·sin²(βx) along the stub)";
+    D.balun="None needed — but a common-mode choke just below the stub is MANDATORY. The 'no radials, no choke' J-pole myth causes more RFI than any other antenna.";
+    D.schematic=svgJPole(lng,stub,sp,tap);
+    D.tap=tap; D.tapLo=tapLo; D.tapHi=tapHi;
+    D.mats = D.constr==="pipe" ?
+      [["½″ type-L copper pipe (or rod/wire)",ftS((lng+stub+sp*2)*1.1,0)],["Copper tees + elbow (pipe build)","2 + 1"],
+       ["Stainless hose clamps (feed tap)","2"],["Common-mode choke","1"],["Mast + standoff","1"]] :
+      [[(D.constr==="ll450"?"450 Ω window line (CCS)":"300 Ω twin-lead ribbon"),ftS((lng)*1.15,0)],
+       ["Solder + heat-shrink (tap & shorts)","1 kit"],["Common-mode choke","1"],["Paracord for hanging","1"]];
+    D.dimNote=(D.constr==="pipe"?"Tune by sliding the feed tap, not by cutting. Keep the bottom bridge above conductive mast sections or isolate it."
+      :"Dimensions already include the "+cc.vf.toFixed(2)+" line velocity factor — remove one conductor above the stub height to form the J, short the bottom, and cut to the numbers above.");
+  }
+
+  else if(type==="slimjim"){
+    const CONSTR={pipe:{vf:0.96,tapF:1.0},ll450:{vf:0.91,tapF:1.0},tl300:{vf:0.90,tapF:0.78}};
+    const cc=CONSTR[p.jconstr||"ll450"];
+    /* M0UKD: total = ¾λ·VF (+gap), radiator = ½λ·VF, match = ¼λ·VF */
+    const tot=lam*0.75*cc.vf, half=lam*0.5*cc.vf, stub=lam*0.25*cc.vf, sp=lam/45, gap=lam*0.01;
+    const REND=1200;
+    const tap=(lam*cc.vf/(2*Math.PI))*Math.asin(Math.sqrt(50/REND))*cc.tapF;
+    const tapLo=(lam*cc.vf/(2*Math.PI))*Math.asin(Math.sqrt(50/2000))*cc.tapF;
+    const tapHi=(lam*cc.vf/(2*Math.PI))*Math.asin(Math.sqrt(50/800))*cc.tapF;
+    D.constr=p.jconstr||"ll450"; D.vf=cc.vf;
+    D.name="Slim Jim"; D.pol="V"; D.pattern="monopole"; D.monoFrac=0.5; D.optH=lam*0.25;
+    D.noRadials=true;
+    D.dims=[
+      {l:"Total length (¾ λ × "+cc.vf.toFixed(2)+")",v:ftIn(tot),s:ftS(tot)+" + gap"},
+      {l:"Radiator section (½ λ × "+cc.vf.toFixed(2)+")",v:ftIn(half),s:"above the gap"},
+      {l:"Matching section (¼ λ × "+cc.vf.toFixed(2)+")",v:ftIn(stub),s:"below the gap"},
+      {l:"Gap",v:ftIn(gap),s:"in ONE side only, ¼ λ up"},
+      {l:"★ Feed point",v:ftIn(tap),s:"up from the bottom short — center conductor to the GAP side, shield opposite"},
+      {l:"Tap slide range",v:ftIn(tapLo)+" – "+ftIn(tapHi),s:"sweep within this window for 1:1"}
+    ];
+    D.wireFt=tot*2+sp*2; D.span=Math.max(sp*3,2);
+    D.feedZ="50 Ω at the calculated tap: "+ftIn(tap)+" above the bottom short. The folded geometry also pulls radiation ~1 dB lower toward the horizon than a plain J-Pole";
+    D.balun="None — but the same mandatory choke as the J-Pole, right below the matching section.";
+    D.schematic=svgSlimJim(tot,half,stub,sp,gap,tap);
+    D.tap=tap; D.tapLo=tapLo; D.tapHi=tapHi;
+    D.mats=[
+      [D.constr==="pipe"?"Copper rod / pipe":(D.constr==="ll450"?"450 Ω window line (CCS)":"300 Ω twin-lead ribbon"), ftS(tot*1.15,0)],
+      ["Wire ties / heat-shrink for the gap","a few"],
+      ["Common-mode choke","1"],["Paracord + carabiner (roll-up hanging)","1 set"]];
+    D.dimNote="Dimensions already include the "+cc.vf.toFixed(2)+" velocity factor for your chosen construction — cut to the numbers above and fine-trim.";
+  }
+
+  else if(type==="gp58"){
+    const R=(585/freq)*k, rad=(234/freq)*1.0;
+    D.name="⅝-wave ground plane"; D.pol="V"; D.pattern="monopole"; D.monoFrac=0.64; D.optH=lam*0.25;
+    D.dims=[
+      {l:"Vertical radiator (⅝ λ)",v:ftIn(R),s:ftS(R)},
+      {l:"Radials (×4, near-flat)",v:ftIn(rad),s:"¼ λ each"},
+      {l:"Base matching coil",v:"required",s:"see Feed & Matching + Recipes"}
+    ];
+    D.wireFt=R+rad*4; D.span=rad*2;
+    D.feedZ="~50 Ω − j·(large) raw — a series base coil cancels the capacitive reactance";
+    D.balun="Series base-loading coil (computed in Recipes) + common-mode choke at the feed.";
+    D.schematic=svgGP58(R,rad);
+    D.mats=[["Radiator (rod / tubing / whip)",ftS(R*1.1,0)],["Radial wire",ftS(rad*4*1.05,0)+" (4 radials)"],
+            ["Coil stock or magnet wire","1 ft"],["SO-239 mount plate","1"],["Common-mode choke","1"]];
+    D.radialPlan=[
+      ["Maximum efficiency","4 radials × "+ftIn(rad)+" (flat to ~15° droop)","≈"+ftS(rad*4,0)+" wire","The ⅝ wants a flatter radial plane than a ¼-wave GP"],
+      ["Reasonable alternative","3 radials","≈"+ftS(rad*3,0)+" wire","Barely measurable difference; slight pattern ripple"]
+    ];
+    D.radialNote="The payoff: ≈3 dB over a ¼-wave with the lowest takeoff angle of any simple vertical. The price: that base coil must be built and tuned.";
+    D.dimNote="≈3 dB gain over a ¼-wave vertical, concentrated at low angles — the classic repeater-reach upgrade.";
+  }
+
+  else if(type==="moxon"){
+    const A=0.3671*lam*k, B=0.04957*lam*k, C=0.01611*lam, Dd=0.0699*lam*k, E=B+C+Dd;
+    D.name="Moxon rectangle"; D.pattern="moxon";
+    D.dims=[
+      {l:"A — width",v:ftIn(A),s:"≈70% of a dipole's span"},
+      {l:"B — driven tails",v:ftIn(B),s:"fold back toward reflector"},
+      {l:"C — tip gap",v:ftIn(C),s:"CRITICAL — hold within ±¼″"},
+      {l:"D — reflector tails",v:ftIn(Dd),s:"fold forward"},
+      {l:"E — side depth (B+C+D)",v:ftIn(E),s:"total rectangle depth"}
+    ];
+    D.wireFt=2*A+2*E; D.span=A;
+    D.feedZ="≈50 Ω direct — the folded coupling does the matching. No gamma, no hairpin";
+    D.balun="1:1 current choke at the feed. That's the whole matching network.";
+    D.schematic=svgMoxon(A,B,C,Dd);
+    D.mats=[["Antenna wire",ftS((2*A+2*E)*1.1,0)],["Fiberglass spreader arms (X-frame)","4"],
+            ["Hub plate + U-bolts","1"],["1:1 choke balun","1"],["Feed-point insulator","1"]];
+    D.dimNote="Free-space gain ≈ 5.5–6 dBi with a stunning 25–30 dB front-to-back — it hears in ONE direction. Turning radius is barely half a Yagi's.";
+  }
+
+  return D;
+}
+
+/* ---------- Radiation pattern math ---------- */
+function patternFn(D, hFt, freq, gq){
+  gq = gq || GROUNDS.avg;
+  const lam=983.571/freq;
+  const hL=Math.max(hFt,1)/lam;
+  return function(elevDeg){
+    const el=elevDeg*Math.PI/180;
+    let g;
+    if(D.pattern==="monopole"){
+      if(elevDeg>=89.5) return 0;
+      /* generalized monopole of electrical height frac·λ:
+         ¼-wave 0.25, ½-wave radiator (J-Pole/Slim Jim) 0.5, ⅝-wave 0.64 */
+      const kH=2*Math.PI*(D.monoFrac||0.25);
+      const den=Math.cos(el)*(1-Math.cos(kH));
+      g=Math.abs((Math.cos(kH*Math.sin(el))-Math.cos(kH))/Math.max(den,1e-6));
+      if(D.optH>0){ // elevated mount gains slight ground reflection ripple
+        g*=0.8+0.2*Math.abs(Math.cos(2*Math.PI*hL*Math.sin(el)));
+      }
+      g*=Math.pow(Math.sin(el)+0.02, gq.ex);  // soil-dependent low-angle response
+    }else{
+      /* imperfect ground: reflection magnitude < 1 fills nulls, trims peaks */
+      const raw=Math.abs(Math.sin(2*Math.PI*hL*Math.sin(el)));
+      g=(1-gq.r)+gq.r*raw;
+      if(D.pol==="V"){                     // vertically-polarized loop feed
+        g=0.55*g+0.45*Math.abs(Math.cos(Math.PI/2*Math.sin(el)))*Math.pow(Math.sin(el)+0.02,gq.ex);
+      }
+    }
+    return g;
+  };
+}
+/* azimuth pattern (relative field vs bearing; 0 = broadside / boom-forward) */
+function azFn(D, hL){
+  if(D.pattern==="monopole") return ()=>1;
+  if(D.pattern==="yagi"){
+    return function(azDeg){
+      const p=azDeg*Math.PI/180;
+      const main=Math.pow(Math.max(Math.cos(p/2),0),8.8);     // HPBW ≈ 64°
+      const back=Math.abs(azDeg)>90 ? 0.126*Math.pow(Math.cos(p),2) : 0;  // F/B ≈ 18 dB
+      return Math.max(main,back);
+    };
+  }
+  if(D.pattern==="moxon"){
+    return function(azDeg){
+      const p=azDeg*Math.PI/180;
+      const main=Math.pow(Math.max(Math.cos(p/2),0),5.8);     // HPBW ≈ 78°
+      const back=Math.abs(azDeg)>90 ? 0.04*Math.pow(Math.cos(p),2) : 0;  // F/B ≈ 28 dB
+      return Math.max(main,back);
+    };
+  }
+  /* horizontal wires: figure-8 broadside that rounds out as height drops */
+  const f=Math.min(0.9,Math.max(0.15,1-1.1*hL));
+  const vloop = D.pol==="V";
+  return function(azDeg){
+    const p=azDeg*Math.PI/180;
+    const fl = vloop ? Math.max(f,0.6) : f;
+    return Math.sqrt(Math.pow(Math.cos(p),2)+fl*fl*Math.pow(Math.sin(p),2));
+  };
+}
+function takeoff(fn){
+  let mx=0;
+  for(let a=1;a<=90;a+=0.25) mx=Math.max(mx,fn(a));
+  /* conventional takeoff = lowest-elevation lobe within 0.1 dB of the strongest
+     (matches NEC-2 lobe peaks within ~1° for a dipole over ground) */
+  for(let a=1;a<=90;a+=0.25){ if(fn(a)>=mx*0.9886) return a; }
+  return 90;
+}
+
+/* ---------- Scope drawing ---------- */
+function drawScope(D,userH,freq,gq){
+  const cv=$("scope"),ctx=cv.getContext("2d");
+  const W=cv.width,H=cv.height;
+  const cx=W/2, cy=H-46, R=Math.min(W/2-30,H-80);
+  const css=getComputedStyle(document.documentElement);
+  const AMB=css.getPropertyValue("--amber").trim();
+  const GRID=css.getPropertyValue("--scope-grid").trim();
+  const GOOD=css.getPropertyValue("--good").trim();
+  const WARN=css.getPropertyValue("--warn").trim();
+  const MUT=css.getPropertyValue("--muted").trim();
+  const BG=css.getPropertyValue("--scope-bg").trim();
+
+  ctx.fillStyle=BG;ctx.fillRect(0,0,W,H);
+
+  /* graticule */
+  ctx.strokeStyle=GRID;ctx.lineWidth=1;ctx.fillStyle=MUT;
+  ctx.font="16px 'Share Tech Mono',monospace";ctx.textAlign="center";
+  const rings=[[-3,0.708],[-10,0.316],[-20,0.1]];
+  ctx.beginPath();ctx.arc(cx,cy,R,Math.PI,0);ctx.stroke();
+  rings.forEach(([db,f])=>{
+    ctx.beginPath();ctx.arc(cx,cy,R*f,Math.PI,0);ctx.stroke();
+    ctx.fillText(db+"",cx+R*f-2,cy-4);
+  });
+  for(let a=0;a<=180;a+=15){
+    const r=a*Math.PI/180;
+    ctx.beginPath();ctx.moveTo(cx,cy);
+    ctx.lineTo(cx+R*Math.cos(Math.PI-r),cy-R*Math.sin(r));ctx.stroke();
+    if(a%30===0 && a>0 && a<180){
+      const lab=a<=90?a:180-a;
+      ctx.fillText(lab+"°",cx+(R+16)*Math.cos(Math.PI-r),cy-(R+14)*Math.sin(r)+4);
+    }
+  }
+  ctx.fillText("HORIZON",cx-R-4, cy+16);ctx.fillText("HORIZON",cx+R+4,cy+16);
+  /* ground */
+  ctx.strokeStyle=MUT;ctx.beginPath();ctx.moveTo(20,cy);ctx.lineTo(W-20,cy);ctx.stroke();
+
+  const toDb=v=>Math.max(0,1+(20*Math.log10(Math.max(v,1e-4)))/30); // 30 dB floor
+
+  function trace(fn,color,dash,glow){
+    /* normalize */
+    let mx=1e-6;for(let a=0;a<=180;a+=0.5){mx=Math.max(mx,fn(a<=90?a:180-a));}
+    ctx.save();
+    ctx.strokeStyle=color;ctx.lineWidth=2.5;
+    ctx.setLineDash(dash?[7,6]:[]);
+    if(glow){ctx.shadowColor=color;ctx.shadowBlur=12;}
+    ctx.beginPath();
+    for(let a=0;a<=180;a+=0.5){
+      const elev=a<=90?a:180-a;
+      const v=toDb(fn(elev)/mx);
+      const r=a*Math.PI/180;
+      const x=cx+R*v*Math.cos(Math.PI-r), y=cy-R*v*Math.sin(r);
+      a===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+    }
+    ctx.stroke();ctx.restore();
+  }
+
+  const fnUser=patternFn(D,userH,freq,gq);
+  const optH=Math.max(D.optH, D.pattern==="monopole"?userH:10);
+  const fnOpt=patternFn(D,optH,freq,gq);
+
+  if(D.pattern!=="monopole" && Math.abs(optH-userH)>1) trace(fnOpt,GOOD,true,false);
+  trace(fnUser,AMB,false,true);
+
+  /* takeoff angle marker */
+  const toa=takeoff(fnUser);
+  ctx.save();
+  ctx.strokeStyle=WARN;ctx.setLineDash([3,4]);ctx.lineWidth=1.5;
+  const rr=toa*Math.PI/180;
+  ctx.beginPath();ctx.moveTo(cx,cy);
+  ctx.lineTo(cx+R*Math.cos(Math.PI-rr),cy-R*Math.sin(rr));ctx.stroke();
+  ctx.restore();
+
+  return {toa, optH};
+}
+
+/* ---------- Schematic SVGs ---------- */
+const S_HEAD='<svg class="schematic" viewBox="0 0 920 300" xmlns="http://www.w3.org/2000/svg" role="img">';
+const sTxt=(x,y,t,anchor="middle",size=21)=>`<text x="${x}" y="${y}" fill="var(--amber)" font-family="'Share Tech Mono',monospace" font-size="${size}" text-anchor="${anchor}">${t}</text>`;
+const sMut=(x,y,t,anchor="middle",size=18)=>`<text x="${x}" y="${y}" fill="var(--muted)" font-family="'IBM Plex Sans',sans-serif" font-size="${size}" text-anchor="${anchor}">${t}</text>`;
+const sLine=(x1,y1,x2,y2,w=3,c="var(--text)",dash="")=>`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${c}" stroke-width="${w}" ${dash?`stroke-dasharray="${dash}"`:""}/>`;
+const sDim=(x1,x2,y,label)=>sLine(x1,y,x2,y,1,"var(--amber)")+sLine(x1,y-5,x1,y+5,1,"var(--amber)")+sLine(x2,y-5,x2,y+5,1,"var(--amber)")+sTxt((x1+x2)/2,y-8,label);
+const sFeed=(x,y)=>`<circle cx="${x}" cy="${y}" r="7" fill="none" stroke="var(--amber)" stroke-width="2.5"/><circle cx="${x}" cy="${y}" r="2.5" fill="var(--amber)"/>`;
+const sIns=(x,y)=>`<rect x="${x-5}" y="${y-4}" width="10" height="8" rx="2" fill="var(--muted)"/>`;
+
+function svgDipole(L,leg){
+  return S_HEAD+
+   sLine(90,120,445,120)+sLine(475,120,830,120)+
+   sIns(85,120)+sIns(835,120)+sFeed(460,120)+
+   sLine(460,127,460,215,2,"var(--muted)")+
+   sMut(460,240,"feed line ↓")+
+   sDim(90,830,80,"total "+ftIn(L))+
+   sDim(90,445,165,"leg "+ftIn(leg))+sDim(475,830,165,"leg "+ftIn(leg))+
+   sMut(90,270,"insulator",'start')+sMut(830,270,"insulator",'end')+
+  "</svg>";
+}
+function svgInvV(L,leg,ang){
+  const droop=(180-ang)/2*Math.PI/180;
+  const dx=330*Math.cos(droop), dy=330*Math.sin(droop);
+  const spanFt=L*Math.cos(droop);
+  return S_HEAD+
+   sLine(460,70,460-dx,70+dy)+sLine(460,70,460+dx,70+dy)+
+   sFeed(460,70)+sIns(460-dx-5,70+dy)+sIns(460+dx+5,70+dy)+
+   sLine(460,77,460,250,2,"var(--muted)")+sMut(510,250,"mast / feed line",'start')+
+   sTxt(460,48,ang+"° included angle")+
+   sTxt(460-dx/2-45,70+dy/2,"leg "+ftIn(leg),"end")+
+   sTxt(460+dx/2+45,70+dy/2,"leg "+ftIn(leg),"start")+
+   sDim(460-dx,460+dx,70+dy+42,"span "+ftIn(spanFt))+
+  "</svg>";
+}
+function svgEFHW(L,cp){
+  return S_HEAD+
+   `<rect x="80" y="95" width="60" height="50" rx="6" fill="none" stroke="var(--amber)" stroke-width="2.5"/>`+
+   sTxt(110,125,"49:1",'middle',20)+
+   sLine(140,120,840,120)+sIns(845,120)+
+   sLine(110,145,110,220,2,"var(--muted)")+sMut(110,245,"coax + choke ↓")+
+   sLine(80,120,30,165,2,"var(--muted)")+
+   sTxt(150,195,"counterpoise "+ftIn(cp),"start",18)+
+   sDim(140,840,80,"radiator "+ftIn(L))+
+  "</svg>";
+}
+function svgFan(Ls){
+  let out=S_HEAD+sFeed(460,95)+sLine(460,102,460,240,2,"var(--muted)")+sMut(460,262,"common feed ↓");
+  Ls.forEach((L,i)=>{
+    const half=Math.max(120,350*(L/Ls[0]));
+    const y=95+i*45;
+    out+=sLine(460,95,460-half,y+20)+sLine(460,95,460+half,y+20)+
+         sIns(460-half-5,y+20)+sIns(460+half+5,y+20)+
+         sTxt(460+half-20,y+42,"total "+ftIn(L),"end",18)+
+         sTxt(460-half+20,y+42,"leg "+ftIn(L/2),"start",18);
+  });
+  out+=sMut(140,40,"elements fan out 2–4 ft apart at the ends",'start');
+  return out+"</svg>";
+}
+function svgLoop(side,fp){
+  const x=310,y=45,s=210;
+  const fx = fp==="bottom"?x+s/2 : fp==="side"?x : x;
+  const fy = fp==="bottom"?y+s : fp==="side"?y+s/2 : y+s;
+  return S_HEAD+
+   `<rect x="${x}" y="${y}" width="${s}" height="${s}" fill="none" stroke="var(--text)" stroke-width="3"/>`+
+   sFeed(fx,fy)+
+   sLine(fx,fy+7,fx,fy+55,2,"var(--muted)")+sMut(fx,fy+75,"feed line ↓")+
+   sDim(x,x+s,y-14,"side "+ftIn(side))+
+   sTxt(x+s/2,y+s/2-12,"loop total","middle",18)+
+   sTxt(x+s/2,y+s/2+16,ftIn(side*4),"middle")+
+   sTxt(x+s+95,y+s/2,"feed: "+(fp==="bottom"?"bottom center":fp==="side"?"side center":"bottom corner"),"start",18)+
+   sMut(x+s+95,y+s/2+22,fp==="bottom"?"horizontal polarization":fp==="side"?"vertical polarization":"mixed 45° polarization","start")+
+  "</svg>";
+}
+function svgVert(Rl,rad,elev){
+  const bx=460, gy=elev?170:225;
+  let out=S_HEAD+sLine(bx,gy-140,bx,gy,4)+sTxt(bx+16,gy-70,"radiator "+ftIn(Rl),"start");
+  if(elev){
+    out+=sLine(bx,gy,bx-120,gy+70,2.5)+sLine(bx,gy,bx+120,gy+70,2.5)+
+         sLine(bx,gy,bx-60,gy+80,2.5)+sLine(bx,gy,bx+60,gy+80,2.5)+
+         sTxt(bx-160,gy+60,"radials ×4","end",18)+sTxt(bx-160,gy+80,ftIn(rad)+" @45°","end",18)+
+         sFeed(bx,gy)+sLine(bx,gy+7,bx,gy+110,2,"var(--muted)")+sMut(bx+70,gy+105,"coax ↓")+
+         sLine(120,gy+115,800,gy+115,2,"var(--muted)","6 5")+sMut(820,gy+119,"ground","start");
+  }else{
+    out+=sFeed(bx,gy)+
+         sLine(120,gy,800,gy,2,"var(--muted)","6 5")+sMut(820,gy+4,"ground","start");
+    for(let i=-3;i<=3;i++){ if(i===0)continue;
+      out+=sLine(bx,gy,bx+i*95,gy+34,1.8,"var(--text)");
+    }
+    out+=sTxt(bx+200,gy+55,"16–32 radials × "+ftIn(rad),"start",18);
+  }
+  return out+"</svg>";
+}
+function svgYagi(ref,drv,dir,sp){
+  const cy=150, x0=200, gap=240;
+  const h=L=>Math.max(70,130*(L/ref));
+  return S_HEAD+
+   sLine(x0-40,cy,x0+2*gap+40,cy,4)+sMut(x0+gap/2,cy+112,"boom "+ftIn(2*sp))+
+   sLine(x0,cy-h(ref),x0,cy+h(ref),4)+sTxt(x0,cy-h(ref)-10,"REF "+ftIn(ref))+
+   sLine(x0+gap,cy-h(drv),x0+gap,cy+h(drv),4)+sTxt(x0+gap,cy-h(drv)-10,"DRV "+ftIn(drv))+sFeed(x0+gap,cy)+
+   sLine(x0+2*gap,cy-h(dir),x0+2*gap,cy+h(dir),4)+sTxt(x0+2*gap,cy-h(dir)-10,"DIR "+ftIn(dir))+
+   sMut(x0+gap/2,cy+62,"spacing "+ftIn(sp))+
+   sMut(x0+gap+gap/2,cy+62,"spacing "+ftIn(sp))+
+   `<path d="M ${x0+2*gap+60} ${cy} l 50 0 m -12 -9 l 12 9 l -12 9" stroke="var(--good)" stroke-width="2.5" fill="none"/>`+
+   sMut(x0+2*gap+85,cy-16,"fwd")+
+  "</svg>";
+}
+
+/* ---------- Azimuth scope ---------- */
+function drawAz(D, hL, freq){
+  const cv=$("azscope"),ctx=cv.getContext("2d");
+  const W=cv.width,H=cv.height,cx=W/2,cy=H/2,R=Math.min(W,H)/2-38;
+  const css=getComputedStyle(document.documentElement);
+  const AMB=css.getPropertyValue("--amber").trim(), GRID=css.getPropertyValue("--scope-grid").trim();
+  const MUT=css.getPropertyValue("--muted").trim(), BG=css.getPropertyValue("--scope-bg").trim();
+  const GOOD=css.getPropertyValue("--good").trim();
+  ctx.fillStyle=BG;ctx.fillRect(0,0,W,H);
+  ctx.strokeStyle=GRID;ctx.lineWidth=1;ctx.fillStyle=MUT;
+  ctx.font="16px 'Share Tech Mono',monospace";ctx.textAlign="center";
+  [[-3,0.708],[-10,0.316],[-20,0.1]].forEach(([db,f])=>{
+    ctx.beginPath();ctx.arc(cx,cy,R*f,0,2*Math.PI);ctx.stroke();
+    ctx.fillText(db+"",cx+4+R*f*0.707,cy-R*f*0.707);
+  });
+  ctx.beginPath();ctx.arc(cx,cy,R,0,2*Math.PI);ctx.stroke();
+  for(let a=0;a<360;a+=30){
+    const r=a*Math.PI/180;
+    ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+R*Math.sin(r),cy-R*Math.cos(r));ctx.stroke();
+  }
+  const fn=azFn(D,hL);
+  const toDb=v=>Math.max(0,1+(20*Math.log10(Math.max(v,1e-4)))/30);
+  let mx=1e-6;for(let a=-180;a<=180;a+=1)mx=Math.max(mx,fn(a));
+  ctx.save();ctx.strokeStyle=AMB;ctx.lineWidth=2.5;ctx.shadowColor=AMB;ctx.shadowBlur=12;
+  ctx.beginPath();
+  for(let a=-180;a<=180;a+=1){
+    const v=toDb(fn(a)/mx), r=a*Math.PI/180;
+    const x=cx+R*v*Math.sin(r), y=cy-R*v*Math.cos(r);
+    a===-180?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  }
+  ctx.closePath();ctx.stroke();ctx.restore();
+  /* orientation labels */
+  ctx.fillStyle=MUT;
+  if(D.pattern==="yagi"||D.pattern==="moxon"){
+    ctx.save();ctx.strokeStyle=GOOD;ctx.lineWidth=2.5;
+    ctx.beginPath();ctx.moveTo(cx,cy-R-6);ctx.lineTo(cx,cy-R-26);
+    ctx.moveTo(cx-7,cy-R-18);ctx.lineTo(cx,cy-R-26);ctx.lineTo(cx+7,cy-R-18);ctx.stroke();ctx.restore();
+    ctx.fillText("FWD",cx,cy-R-30);
+  }else if(D.pattern!=="monopole" && D.pol!=="V"){
+    ctx.fillText("BROADSIDE",cx,cy-R-12);
+    ctx.fillText("wire axis →",cx+R-36,cy+4);
+  }
+  return D.pattern==="yagi" ? "HPBW ≈ 64°, front-to-back ≈ 18 dB (3-element model)." :
+         D.pattern==="moxon" ? "HPBW ≈ 78°, front-to-back ≈ 28 dB — the Moxon trades a little forward gain for near-total rejection off the back. Point the quiet side at your noise source." :
+         D.pattern==="monopole" ? "Omnidirectional — a vertical hears (and is heard) equally in all directions." :
+         "Figure-8 broadside to the wire. Lower heights round the nulls out toward omni — at NVIS heights the direction barely matters.";
+}
+
+/* ---------- SWR curve ---------- */
+function swrAt(f, f0, bwHz){
+  const edge=Math.max(bwHz/f0, 1e-4);            // fractional 2:1 bandwidth
+  const Q=1/(Math.SQRT2*edge);
+  const delta=f/f0-f0/f;
+  const X=50*Q*delta;
+  const G=Math.abs(X)/Math.sqrt(4*50*50+X*X);
+  return (1+G)/(1-G);
+}
+function drawSWR(f0, bwMHz){
+  const cv=$("swrscope"),ctx=cv.getContext("2d");
+  const W=cv.width,H=cv.height;
+  const css=getComputedStyle(document.documentElement);
+  const AMB=css.getPropertyValue("--amber").trim(), GRID=css.getPropertyValue("--scope-grid").trim();
+  const MUT=css.getPropertyValue("--muted").trim(), BG=css.getPropertyValue("--scope-bg").trim();
+  const WARN=css.getPropertyValue("--warn").trim();
+  const [fa,fb]=bandEdges(f0);
+  const px=f=>40+(f-fa)/(fb-fa)*(W-60);
+  const py=s=>H-26-(Math.min(s,6)-1)/5*(H-52);
+  ctx.fillStyle=BG;ctx.fillRect(0,0,W,H);
+  ctx.strokeStyle=GRID;ctx.fillStyle=MUT;ctx.font="15px 'Share Tech Mono',monospace";
+  [1.5,2,3,5].forEach(s=>{
+    ctx.beginPath();ctx.moveTo(40,py(s));ctx.lineTo(W-20,py(s));ctx.stroke();
+    ctx.textAlign="right";ctx.fillText(s+":1",36,py(s)+4);
+  });
+  ctx.strokeStyle=WARN;ctx.setLineDash([5,5]);
+  ctx.beginPath();ctx.moveTo(40,py(2));ctx.lineTo(W-20,py(2));ctx.stroke();ctx.setLineDash([]);
+  ctx.textAlign="center";
+  ctx.fillText(fa.toFixed(fa<50?3:1),60,H-8);ctx.fillText(fb.toFixed(fb<50?3:1),W-40,H-8);
+  ctx.fillText("MHz",W/2,H-8);
+  /* trace */
+  ctx.save();ctx.strokeStyle=AMB;ctx.lineWidth=2.5;ctx.shadowColor=AMB;ctx.shadowBlur=10;
+  ctx.beginPath();
+  const N=240;
+  for(let i=0;i<=N;i++){
+    const f=fa+(fb-fa)*i/N;
+    const x=px(f),y=py(swrAt(f,f0,bwMHz));
+    i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  }
+  ctx.stroke();ctx.restore();
+  /* design frequency marker */
+  ctx.strokeStyle=MUT;ctx.setLineDash([3,4]);
+  ctx.beginPath();ctx.moveTo(px(f0),18);ctx.lineTo(px(f0),H-26);ctx.stroke();ctx.setLineDash([]);
+  ctx.fillText("▼ "+f0.toFixed(3),px(f0),14);
+  /* usable band edges */
+  const lo=f0-bwMHz/2, hi=f0+bwMHz/2;
+  return {lo,hi};
+}
+
+/* ---------- SWR extra loss (ARRL total-loss formula) ---------- */
+function totalLossAtSWR(matchedDb, swr){
+  const a=Math.pow(10,matchedDb/10);
+  const G=(swr-1)/(swr+1);
+  return 10*Math.log10((a*a-G*G)/(a*(1-G*G)));
+}
+
+/* ---------- Construction recipes ---------- */
+function buildRecipes(D,p,dIn){
+  const f=p.freq, lam=983.571/f, P=p.power, out=[];
+  const choke = P<=150 ? "8–10 turns of RG-58 or RG-316 wound on an FT-240-31 toroid"
+              : P<=600 ? "12 turns of RG-400 (PTFE) on an FT-240-31 — RG-58 dielectric runs hot above ~150 W"
+              : "12 turns of RG-400 on two stacked FT-240-31 cores (legal-limit duty)";
+  if(p.type==="efhw"){
+    const core = P<=120 ? "FT-140-43" : P<=500 ? "FT-240-43" : "2 × FT-240-43 stacked";
+    out.push(["49:1 Unun (matching transformer)",
+      `Core: <span class="num">${core}</span> at your ${P} W. Wind <span class="num">2 : 14 turns</span> (autotransformer style, tap at turn 2). `+
+      (f>=18?`Add a <span class="num">100 pF / 3 kV</span> compensation capacitor across the primary — it flattens 15–10 m noticeably.`:
+      `A 100 pF / 3 kV compensation cap across the primary helps if you'll also run this wire above 18 MHz.`)]);
+    out.push(["Common-mode choke",`${choke}, placed <span class="num">${ftIn(lam*0.05)}</span> (0.05 λ) down the coax from the unun.`]);
+  }else if(p.type==="loop"){
+    const q59=246/f*0.66, q59f=246/f*0.82;
+    out.push(["75 Ω quarter-wave matching section (Q-section)",
+      `The elegant match for a ~110 Ω loop: a quarter-wave of 75 Ω coax transforms it to ≈50 Ω. Solid-dielectric RG-59/RG-11 (VF 0.66): <span class="num">${ftIn(q59)}</span>. Foam (VF 0.82): <span class="num">${ftIn(q59f)}</span>. Splice it between the feed point and your 50 Ω run.`]);
+    out.push(["Alternative: 2:1 balun",`Guanella 2:1 from two 100 Ω bifilar windings on an FT-240-43; or accept a 4:1 with a slightly compromised match.`]);
+    out.push(["Common-mode choke",choke+" at the junction."]);
+  }else if(p.type==="yagi3"){
+    const XL=50, Lh=XL/(2*Math.PI*f);
+    const hpZ=332, hpLen=lam*Math.atan(XL/hpZ)/(2*Math.PI);
+    const gRod=lam*0.04, gSp=lam*0.007, gC=2000/f;
+    out.push(["Hairpin (beta) match",
+      `Shorten the driven element ~<span class="num">1.5–2 %</span> from the table value (adds the needed −25 Ω of capacitive reactance), then bridge the feed with a hairpin inductor of <span class="num">${Lh.toFixed(2)} µH</span> (X<sub>L</sub> = 50 Ω). As a shorted 2″-wide loop of ¼″ rod (Z₀ ≈ 330 Ω) that's <span class="num">${ftIn(hpLen)}</span> long.`]);
+    out.push(["Gamma match (alternative)",
+      `Rod ≈ <span class="num">${ftIn(gRod)}</span> (0.04 λ), spaced ≈ <span class="num">${ftIn(gSp)}</span> from the element, series capacitor starting near <span class="num">${gC.toFixed(0)} pF</span>. No element shortening needed; adjust rod tap and cap for 1:1.`]);
+    out.push(["Choke balun",choke+" right at the feed — beams are notorious feed-line radiators."]);
+  }else if(p.type==="gp"||p.type==="vert"){
+    const R=(234/f)*(p.matK*p.dCorr);
+    if(p.height < R*0.95){
+      const l=p.height*0.3048, a=(dIn/2)*0.0254;
+      const Z0a=60*(Math.log(2*l/a)-1);
+      const beta=2*Math.PI/(lam*0.3048);
+      const Xin=Z0a/Math.tan(beta*l);
+      const Luh=Xin/(2*Math.PI*f);
+      const turns=Math.ceil(7*Math.sqrt(Math.max(Luh,0.1)));
+      out.push(["Loading coil — your radiator won't reach full size",
+        `A full ¼-wave needs <span class="num">${ftIn(R)}</span> but you have <span class="num">${p.height} ft</span>. Base-load it: ≈ <span class="num">${Luh.toFixed(1)} µH</span> (X<sub>L</sub> ≈ ${Xin.toFixed(0)} Ω). Wind ≈ <span class="num">${turns} turns</span> of #12 on a 2″ form, 4″ long, then trim turns for resonance. Expect a narrower bandwidth and a few dB of coil loss — center-loading recovers some of that if you can support it.`]);
+    }
+    out.push(["Feed-point choke",choke+" at the feed. Verticals without a choke put RF on the shield — and in the shack."]);
+    if(p.type==="gp") out.push(["Radial tuning",`Cut the four radials to <span class="num">${ftIn(R*1.05)}</span>, droop ~45°, and trim them (not the radiator) first — they set the match.`]);
+  }else if(p.type==="jpole"){
+    const cname={pipe:"Copper pipe / bare rod (VF 0.96)",ll450:"450 Ω window line (VF 0.91)",tl300:"300 Ω twin-lead (VF 0.90)"}[D.constr];
+    const lng=lam*0.75*D.vf, stub=lam*0.25*D.vf, sp=lam/45;
+    out.push(["Cut list — "+cname,
+      `Long element <span class="num">${ftIn(lng)}</span>, stub <span class="num">${ftIn(stub)}</span>${D.constr==="pipe"?`, bottom bridge <span class="num">${ftIn(sp)}</span> c-c (two tees + one elbow)`:", spacing set by the line itself"}. Feed tap at <span class="num">${ftIn(D.tap)}</span> up — center conductor to the long element, shield to the stub — slide within <span class="num">${ftIn(D.tapLo)} – ${ftIn(D.tapHi)}</span> for 1:1. Dimensions are per the M0UKD-form (electrical length × VF): no further VF correction needed.`]);
+    if(D.constr!=="pipe") out.push(["Line-build notes",
+      `Remove one conductor above the stub height to form the J; short the bottom end. Copper-clad steel conducts like copper at RF — no length change for CCS. ${D.constr==="tl300"?"Solid-ribbon twin-lead VF varies (0.85–0.91) and its lower stub Z₀ puts the tap lower — the range above already reflects that.":"Window-line VF runs 0.91–0.95 by brand; if resonance lands low, your line is faster — trim."}`]);
+    else out.push(["Pipe assembly",`Sweat the joints, then clamp the coax with stainless hose clamps at the tap and slide both together for best SWR.`]);
+    out.push(["The mandatory choke",choke+", immediately below the bridge. Without it the feed line becomes the counterpoise and the pattern (and your shack) suffers."]);
+  }else if(p.type==="slimjim"){
+    const cname={pipe:"bare rod/pipe (VF 0.96)",ll450:"450 Ω window line (VF 0.91)",tl300:"300 Ω twin-lead (VF 0.90)"}[D.constr];
+    const tot=lam*0.75*D.vf, stub=lam*0.25*D.vf, gap=lam*0.01;
+    out.push(["Cut list — "+cname,
+      `Total <span class="num">${ftIn(tot)}</span> (+ gap). Short both ends. Cut the gap <span class="num">${ftIn(gap)}</span> wide in ONE conductor, <span class="num">${ftIn(stub)}</span> up from the bottom. Tap the coax at <span class="num">${ftIn(D.tap)}</span> above the bottom short (slide within <span class="num">${ftIn(D.tapLo)} – ${ftIn(D.tapHi)}</span> for 1:1). VF is already applied — cut to these numbers.`]);
+    if(D.constr==="tl300") out.push(["300 Ω ribbon notes",`Solid-jacket twin-lead runs slower and its lower stub Z₀ moves the 50 Ω tap lower (≈1.0–1.5″ at 2 m vs ≈1.75″ on window line) — the computed tap above accounts for it. VF varies by brand (0.85–0.91): cut long, trim.`]);
+    if(D.constr==="ll450") out.push(["Window-line notes",`CCS conductors behave as copper at RF. Brand VF spread is 0.91–0.95 — if your SWR dip lands below the design frequency, the elements are electrically long: trim the stub end.`]);
+    out.push(["Choke",choke+" below the matching section — same rule as the J-Pole."]);
+  }else if(p.type==="gp58"){
+    const Luh=180/(2*Math.PI*f);
+    const n=Math.ceil(9.9*Math.sqrt(Luh));
+    out.push(["Base matching coil",
+      `Series inductor ≈ <span class="num">${Luh.toFixed(2)} µH</span> (cancels ≈ −j180 Ω — the actual reactance runs −j100 to −j300 depending on radiator diameter, thicker = less). On a 1″ form, 2″ long: ≈ <span class="num">${n} turns</span> of #14–16 magnet wire. Squeeze/stretch turns for minimum SWR — that's the whole tuning procedure.`]);
+    out.push(["Radials",`Four at <span class="num">${ftIn(234/f)}</span>, mounted flat to slightly drooped. Flatter radials preserve the ⅝'s low-angle payoff.`]);
+    out.push(["Choke",choke+" at the feed point."]);
+  }else if(p.type==="moxon"){
+    const C=0.01611*lam;
+    out.push(["Frame & wire",
+      `X-frame of four fiberglass arms on a hub; run the wire through end caps or small eyes. The tip gap <span class="num">C = ${ftIn(C)}</span> sets the coupling — hold it within <span class="num">±¼″</span> with a rigid spacer (acrylic, PVC). Everything else tolerates an inch.`]);
+    out.push(["Feed",`Break the driven element at the center of side A, feed directly with 50 Ω through ${choke.toLowerCase()}. If SWR sits high, adjust the C gap before touching anything else.`]);
+  }else{
+    out.push(["1:1 current balun / choke",choke+" at the center insulator. This is the single highest-value dollar in a wire antenna."]);
+    if(p.type==="fan") out.push(["Element spacing",`Hold element ends <span class="num">2–4 ft</span> apart with PVC or fiberglass spreaders; tune longest band first, shortest last.`]);
+    if(p.type==="invv") out.push(["Apex hardware",`Use a pulley + counterweight at the apex rather than a hard tie — wire antennas live longer when the tree moves and they don't.`]);
+  }
+  return out.map(([h,b])=>`<h3>${h}</h3><p>${b}</p>`).join("");
+}
+
+/* ---------- Wire sag & tension ---------- */
+function buildSag(D,p,gaugeKey,matKey){
+  const isWireAnt = ["dipole","invv","efhw","fan","loop"].includes(p.type);
+  const mech=WIREMECH[gaugeKey];
+  if(!isWireAnt) return {rows:`<tr><td colspan="2">Self-supporting / frame antenna — catenary sag analysis not applicable. Check mast loading, boom deflection, and clamp torque instead.</td></tr>`, note:""};
+  if(!mech) return {rows:`<tr><td colspan="2">Select a wire gauge (12–20 AWG) for sag analysis.</td></tr>`, note:""};
+  const insul = matKey==="insulated_copper";
+  const w=mech.w*(insul?1.3:1);
+  const span=Math.min(D.span,p.span);
+  const Tsafe=mech.brk*0.25;
+  const sag=w*span*span/(8*Tsafe);
+  const sagPct=100*sag/span;
+  const T1ft=w*span*span/8;   // tension needed for 1 ft of sag
+  const bad=sagPct>4;
+  return {
+    rows:`
+    <tr><th>Wire</th><td class="num">${GAUGES[gaugeKey].name}${insul?" (insulated, +30% wt)":""} · ${w.toFixed(4)} lb/ft</td></tr>
+    <tr><th>Horizontal span</th><td class="num">${ftIn(span)}</td></tr>
+    <tr><th>Breaking strength (soft-drawn Cu)</th><td class="num">≈ ${mech.brk} lb</td></tr>
+    <tr><th>Safe working tension (25%)</th><td class="num">${Tsafe.toFixed(0)} lb</td></tr>
+    <tr><th>Sag at safe tension</th><td class="num">${sag<0.02?"&lt; ¼″":ftIn(sag)}  (${sagPct.toFixed(1)}% of span)</td></tr>
+    <tr><th>Tension for 1 ft of sag</th><td class="num">${T1ft.toFixed(0)} lb ${T1ft>Tsafe?'<span class="verdict-warn">— exceeds safe tension!</span>':'<span class="verdict-ok">— OK</span>'}</td></tr>`,
+    note: bad ?
+      "That's a lot of droop. Options: copper-clad steel wire (≈3× the strength), a Dacron catenary rope carrying the wire, or a center support turning it into two shorter spans. Never tension soft copper past ~25% of breaking — it creeps and stretches out of tune." :
+      "Comfortable. Use Dacron (not nylon — it stretches) for end ropes, leave a drip loop, and a counterweight or spring on one end will forgive tree sway."
+  };
+}
+
+/* ---------- FCC OET-65 RF exposure ---------- */
+function buildRF(D,p){
+  const f=p.freq, P=p.power, duty=p.duty;
+  const Pavg=P*duty*0.5;                       // 50% tx time
+  const gains={dipole:2.15,invv:1.9,efhw:2.15,fan:2.15,loop:3.1,gp:2.0,vert:2.0,yagi3:8.0,
+               jpole:2.15,slimjim:2.6,gp58:4.0,moxon:6.0};
+  const gdBi=gains[p.type]||2.15, G=Math.pow(10,gdBi/10);
+  const mpeU = f<30 ? 180/(f*f) : f<300 ? 0.2 : f/1500;
+  const mpeC = f<3 ? 100 : f<30 ? 900/(f*f) : f<300 ? 1.0 : f/300;
+  const Rcm = mpe => Math.sqrt(Pavg*1000*G*2.56/(4*Math.PI*mpe));
+  const ru=Rcm(mpeU)/30.48, rc=Rcm(mpeC)/30.48;
+  const hOK = p.height >= ru;
+  return `
+   <tr><th>Average power</th><td class="num">${Pavg.toFixed(1)} W  (${P} W PEP × ${(duty*100).toFixed(0)}% duty × 50% tx time)</td></tr>
+   <tr><th>Antenna gain used</th><td class="num">${gdBi.toFixed(1)} dBi + 2.56× ground reflection</td></tr>
+   <tr><th>MPE limit — uncontrolled</th><td class="num">${mpeU.toFixed(3)} mW/cm²</td></tr>
+   <tr><th>Compliance distance — uncontrolled (public/neighbors)</th><td class="num">${ru.toFixed(1)} ft</td></tr>
+   <tr><th>Compliance distance — controlled (you/your household)</th><td class="num">${rc.toFixed(1)} ft</td></tr>
+   <tr><th>Your feed-point height (${p.height} ft)</th><td>${hOK?'<span class="verdict-ok">Clears the uncontrolled distance straight down — people below are fine.</span>':'<span class="verdict-warn">Below the uncontrolled compliance distance — keep people at least '+ru.toFixed(0)+' ft from the antenna while transmitting, or reduce power/duty.</span>'}</td></tr>`;
+}
+
+function svgJPole(lng,stub,sp,tap){
+  const x1=430,x2=505,yb=252;
+  const hL=205, hS=hL*(stub/lng);
+  const yTraw=hL*(tap/lng), clamped=yTraw<16;
+  const yT=yb-Math.max(yTraw,16);
+  return S_HEAD+
+   sLine(x1,yb-hL,x1,yb,5)+sLine(x2,yb-hS,x2,yb,5)+sLine(x1,yb,x2,yb,5)+
+   /* coax rises from below and splits at the tap height */
+   sLine((x1+x2)/2,yb+34,(x1+x2)/2,yT+16,3,"var(--muted)")+
+   sLine((x1+x2)/2,yT+16,x1,yT,3,"var(--amber)")+
+   sLine((x1+x2)/2,yT+16,x2,yT,3,"var(--muted)","6 4")+
+   `<circle cx="${x1}" cy="${yT}" r="6" fill="var(--amber)"/>`+
+   `<circle cx="${x2}" cy="${yT}" r="6" fill="none" stroke="var(--muted)" stroke-width="3"/>`+
+   sTxt(x1-16,yT-14,"CENTER conductor","end",18)+
+   sTxt(x1-16,yT+10,"→ long element","end",17)+
+   sTxt(x2+18,yT-14,"SHIELD (braid)","start",18)+
+   sTxt(x2+18,yT+10,"→ stub","start",17)+
+   sMut((x1+x2)/2+14,yb+30,"50 Ω coax ↓","start")+
+   /* tap-height dimension, parked far left of every label */
+   sLine(120,yb,120,yT,1.5,"var(--amber)")+
+   sLine(112,yb,128,yb,1.5,"var(--amber)")+sLine(112,yT,128,yT,1.5,"var(--amber)")+
+   sTxt(120,yT-14,"tap "+ftIn(tap)+(clamped?" *":""),"middle",18)+
+   (clamped?sMut(120,yb+26,"*tap drawn enlarged","middle",15):"")+
+   sTxt(x1-16,yb-hL+16,"¾ λ "+ftIn(lng),"end")+
+   /* spacing: dimension above the stub, text safely to the right */
+   sLine(x1,yb-hS-30,x2,yb-hS-30,1.5,"var(--amber)")+
+   sLine(x1,yb-hS-38,x1,yb-hS-22,1.5,"var(--amber)")+sLine(x2,yb-hS-38,x2,yb-hS-22,1.5,"var(--amber)")+
+   sTxt(x2+18,yb-hS-24,"spacing "+ftIn(sp),"start",18)+
+   sTxt(x2+18,yb-hS+8,"¼ λ "+ftIn(stub),"start")+
+  "</svg>";
+}
+function svgSlimJim(tot,half,stub,sp,gap,tap){
+  const x1=400,x2=470,yt=42,yb=252;
+  const yGap=yb-(yb-yt)*(stub/tot);
+  const yTraw=(yb-yt)*(tap/tot), clamped=yTraw<16;
+  const yT=yb-Math.max(yTraw,16);
+  return S_HEAD+
+   sLine(x1,yt,x1,yb,5)+
+   sLine(x2,yt,x2,yGap-9,5)+sLine(x2,yGap+9,x2,yb,5)+
+   sLine(x1,yt,x2,yt,5)+sLine(x1,yb,x2,yb,5)+
+   /* coax splits: CENTER → gap side, SHIELD → solid side */
+   sLine((x1+x2)/2,yb+34,(x1+x2)/2,yT+16,3,"var(--muted)")+
+   sLine((x1+x2)/2,yT+16,x2,yT,3,"var(--amber)")+
+   sLine((x1+x2)/2,yT+16,x1,yT,3,"var(--muted)","6 4")+
+   `<circle cx="${x2}" cy="${yT}" r="6" fill="var(--amber)"/>`+
+   `<circle cx="${x1}" cy="${yT}" r="6" fill="none" stroke="var(--muted)" stroke-width="3"/>`+
+   sTxt(x2+18,yT-14,"CENTER conductor","start",18)+
+   sTxt(x2+18,yT+10,"→ gap side","start",17)+
+   sTxt(x1-16,yT-14,"SHIELD (braid)","end",18)+
+   sTxt(x1-16,yT+10,"→ solid side","end",17)+
+   sMut((x1+x2)/2+14,yb+30,"50 Ω coax ↓","start")+
+   /* tap-height dimension, far-left lane */
+   sLine(120,yb,120,yT,1.5,"var(--amber)")+
+   sLine(112,yb,128,yb,1.5,"var(--amber)")+sLine(112,yT,128,yT,1.5,"var(--amber)")+
+   sTxt(120,yT-14,"tap "+ftIn(tap)+(clamped?" *":""),"middle",18)+
+   (clamped?sMut(120,yb+26,"*tap drawn enlarged","middle",15):"")+
+   sTxt(x1-16,yt+22,"total "+ftIn(tot),"end")+
+   sTxt(x2+18,(yt+yGap)/2-40,"½ λ radiator","start",18)+
+   sTxt(x2+18,(yt+yGap)/2-14,ftIn(half),"start")+
+   sTxt(x2+18,yGap+5,"gap "+ftIn(gap),"start",18)+
+   sTxt(x2+18,(yGap+yT)/2-2,"¼ λ match","start",18)+
+   sTxt(x2+18,(yGap+yT)/2+24,ftIn(stub),"start")+
+  "</svg>";
+}
+function svgGP58(R,rad){
+  const bx=460,gy=195;
+  return S_HEAD+
+   sLine(bx,gy-160,bx,gy-24,5)+sTxt(bx+16,gy-90,"⅝ λ "+ftIn(R),"start")+
+   `<rect x="${bx-12}" y="${gy-24}" width="24" height="24" rx="4" fill="none" stroke="var(--amber)" stroke-width="2.5"/>`+
+   sTxt(bx+22,gy-6,"base coil","start",18)+
+   sFeed(bx,gy+2)+
+   sLine(bx,gy+2,bx-125,gy+42,2.5)+sLine(bx,gy+2,bx+125,gy+42,2.5)+
+   sLine(bx,gy+2,bx-62,gy+52,2.5)+sLine(bx,gy+2,bx+62,gy+52,2.5)+
+   sTxt(bx-160,gy+40,"4 radials","end",18)+sTxt(bx-160,gy+58,ftIn(rad)+" near-flat","end",18)+
+   sLine(bx,gy+9,bx,gy+80,2,"var(--muted)")+sMut(bx+56,gy+78,"coax ↓")+
+  "</svg>";
+}
+function svgMoxon(A,B,C,Dd){
+  const w=440, x=240, y=60;
+  const dep=w*((B+C+Dd)/A);
+  const bl=w*(B/A), dl=w*(Dd/A), gp=Math.max(w*(C/A),8);
+  return S_HEAD+
+   sLine(x,y,x+w,y,4)+sLine(x,y,x,y+bl,4)+sLine(x+w,y,x+w,y+bl,4)+
+   sFeed(x+w/2,y)+sLine(x+w/2,y-0+7,x+w/2,y-0+0,0)+
+   sLine(x,y+dep,x+w,y+dep,4)+sLine(x,y+dep,x,y+dep-dl,4)+sLine(x+w,y+dep,x+w,y+dep-dl,4)+
+   sTxt(x+w/2,y-14,"A "+ftIn(A))+
+   sTxt(x-14,y+bl/2,"B "+ftIn(B),"end",18)+
+   sTxt(x-14,y+bl+gp/2+4,"C "+ftIn(C),"end",18)+
+   sTxt(x-14,y+dep-dl/2,"D "+ftIn(Dd),"end",18)+
+   sMut(x+w/2,y+dep+24,"reflector")+sMut(x+w-60,y+bl+14,"driven — feed at center","end")+
+   `<path d="M ${x+w+50} ${y+dep/2} l 0 -60 m -9 12 l 9 -12 l 9 12" stroke="var(--good)" stroke-width="2.5" fill="none"/>`+
+   sMut(x+w+50,y+dep/2-72,"fwd")+
+  "</svg>";
+}
+
+/* ---------- Advisor ---------- */
+function buildAdvisor(D,p,toa,optH){
+  const out=[];
+  const lam=983.571/p.freq;
+  const hL=p.height/lam;
+  const fits = D.span<=p.span;
+
+  out.push(`<p><b>${D.name}</b> on <b>${BANDNAME(p.freq)}</b> needs about <b>${ftIn(D.span)}</b> of horizontal footprint. You have <b>${p.span} ft</b> — ${fits?'<span class="ok">it fits.</span>':'<span class="flag">that\u2019s tight.</span>'}</p>`);
+
+  if(!fits){
+    const tips=[];
+    if(p.type==="dipole") tips.push("switch to an <b>inverted-V</b> (needs ~85–90 % of the span and only one support), or bend the last 10–15 % of each leg downward — minimal performance cost");
+    if(p.type==="efhw") tips.push("run the wire in an L or zig-zag — an EFHW tolerates bends well; keep the first third as straight and high as possible");
+    if(p.type==="loop") tips.push("go to a delta (triangle) shape, or hang it as a vertical rectangle to shrink the footprint");
+    if(p.type==="fan") tips.push("drop the lowest band element or bend its ends down");
+    tips.push("move up one band, or consider a loaded/shortened design");
+    out.push(`<p><span class="flag">Space fix:</span> ${tips.join("; ")}.</p>`);
+  }
+
+  if(D.pattern==="monopole"){
+    if(D.noRadials){
+      out.push(`<p><b>No radials — none, zero.</b> The ${D.name} is a complete half-wave system: the radiator is voltage-fed at a high-impedance point and the ¼-λ stub is its built-in counterpoise. Adding radials doesn't help and usually detunes the match. The one thing that <i>preserves</i> this radial-free behavior is the <b>common-mode choke</b> below the stub — skip it and the coax shield quietly becomes an accidental counterpoise, skewing the pattern and carrying RF into the shack. Takeoff here ≈ ${fmt(toa,0)}°; height above surrounding clutter is what buys performance.</p>`);
+    }else{
+      out.push(`<p>This vertical earns its keep with the <b>radial system</b>, not height. Ground-mounted: more radials beat longer ones. Elevated: four resonant radials gets you a proper match and DX-friendly low angles${p.type==="gp58"?" (keep them near-flat on the ⅝ to protect its low-angle gain)":""}. Expect a low takeoff (~${fmt(toa,0)}°) — great for DX, weaker for close-in contacts.</p>`);
+      if(p.height<8 && p.type==="gp") out.push(`<p><span class="flag">Note:</span> an elevated ground-plane really wants its feed point at least 0.1 λ (${ftIn(lam*0.1)}) up. Below that, ground-mount it with a proper radial field instead.</p>`);
+    }
+  }else{
+    out.push(`<p>At <b>${p.height} ft</b> (${fmt(hL,2)} λ) your takeoff angle is about <b>${fmt(toa,0)}°</b>. The classic DX target is a half-wave up — <b>${ftIn(optH)}</b> on this band — which pulls the main lobe down near 15–25°.</p>`);
+    if(hL<0.2){
+      out.push(`<p><span class="flag">Low-height reality check:</span> below ~0.2 λ most energy goes nearly straight up (<b>NVIS</b>). That's actually excellent for reliable 0–400 mile regional coverage on 40/80 m — just don't expect DX. If DX matters, raise the antenna or pick a higher band where ${p.height} ft is electrically taller.</p>`);
+    }else if(hL<0.4){
+      out.push(`<p><span class="ok">Workable height:</span> you'll get a blend of regional and DX performance. Every extra 10 ft meaningfully lowers the lobe.</p>`);
+    }else{
+      out.push(`<p><span class="ok">Good height:</span> you're at or near the DX sweet spot for this band. Watch for the pattern breaking into multiple lobes above ~1 λ — sometimes a slightly lower height gives a cleaner single lobe.</p>`);
+    }
+  }
+
+  /* Ideal-implementation blurb, independent of constraints */
+  const ideal={
+    dipole:"flat top, broadside to your target direction, half-wave high, fed with a true 1:1 current balun and the coax dropping away at 90° for at least a quarter wave",
+    invv:"apex as high as one support allows, 110–130° included angle, legs symmetrical, ends at least 8 ft above head height",
+    efhw:"straight and high with the transformer end elevated, counterpoise or coax-shield-as-counterpoise with a choke 0.05 λ down the line",
+    fan:"lowest band flat-top high, shorter elements drooped below it, ends well separated; tune longest to shortest",
+    loop:"full-size square, bottom wire at least 10 ft up, fed for the polarization you want (bottom = horizontal for HF DX)",
+    gp:"feed point 0.25 λ or higher, four drooped radials, choke at the feed, in the clear away from metal",
+    vert:"32+ ground radials, quiet RF location away from the house, elevated feed choke",
+    yagi3:"half-wave or higher on a rotator, boom oriented for your primary targets, elements parallel to ground",
+    jpole:"as high as the mast allows, choked below the bridge, isolated from a conductive mast, in the clear",
+    slimjim:"hung vertically and freely (roll-up) or masted high, choke below the match — its lower-angle edge shows above rooftop height",
+    gp58:"base above nearby rooftops with flat radials and a carefully tuned base coil — that's when the 3 dB shows up",
+    moxon:"on a light rotator a half-wave up, C-gap braced rigid, pointed at the horizon you care about"
+  };
+  out.push(`<p><b>The textbook install</b> (even if you can't get there today): ${ideal[p.type]}. Anything short of this still works — it just moves dB from DX angles to local ones.</p>`);
+
+  if(p.span<50 && p.freq<15) out.push(`<p><b>HOA / small-lot angle:</b> a flagpole vertical, an EFHW along the fence line, or a loop in the attic (derate ~5 % for roofing materials) are the stealth workhorses on the low bands.</p>`);
+
+  return out.join("");
+}
+
+/* ---------- Print Plan ---------- */
+function buildPrintSheet(){
+  const freq=parseFloat($("freq").value)||0;
+  const name=($("atype").selectedOptions[0]||{}).textContent||"antenna";
+  const dims=[...document.querySelectorAll("#dims .dim")].map(d=>
+    `<div><span>${d.querySelector(".lbl").textContent}</span><b>${d.querySelector(".val").textContent}</b></div>`).join("");
+  const mats=$("mats").innerHTML;
+  const matchRows=[...document.querySelectorAll("#matchTable tr")].slice(0,2)
+    .map(r=>`<b>${r.querySelector("th").textContent}:</b> ${r.querySelector("td").textContent}`).join("<br>");
+  const today=new Date().toLocaleDateString();
+  $("printSheet").innerHTML=`
+    <div class="ps-hd">
+      <h1>WZ2P Antenna Workbench — Build Plan</h1>
+      <div class="ps-sub">${name} · ${freq.toFixed(3)} MHz (${BANDNAME(freq)}) · printed ${today} · Software by WZ2P Rich Leland, NC</div>
+    </div>
+    <h2>Cut Dimensions</h2>
+    <div class="ps-dims">${dims}</div>
+    <h2>Build Drawing</h2>
+    ${$("schematic").innerHTML}
+    <h2>Gather / Purchase</h2>
+    <ul>${mats}</ul>
+    <h2>Feed &amp; Matching</h2>
+    <div class="ps-feed">${matchRows}</div>
+    <div class="ps-ft">Cut long, trim in 1–2″ steps to resonance. Dimensions are validated starting points — final trim on-site with an analyzer. 73!</div>`;
+}
+function doPrint(metric){
+  $("printModal").style.display="none";
+  const prev=METRIC;
+  if(METRIC!==metric){ METRIC=metric; recalc(); }
+  buildPrintSheet();                       // sheet captured in the chosen units
+  if(METRIC!==prev){ METRIC=prev; recalc(); }   // screen goes right back
+  $("printPreview").style.display="flex";
+  $("ppPrint").focus();
+}
+
+/* ---------- OLD MAN MODE ---------- */
+const OM_QUIPS=[
+  "My wife said it's her or the tower. I'll miss her at 100 feet.",
+  "It's called 'amateur' radio because 'expensive divorce generator' wouldn't fit on the license.",
+  "75 meters: where men with 1500 watts argue about whose audio sounds worse.",
+  "My doctor said I need more fiber, so I ordered fiberglass spreaders.",
+  "The antenna is stealth. The credit card statement is not.",
+  "I told my wife the amplifier was 'refurbished.' Refurbished means new, right?",
+  "Old hams never die — they just lose their drive.",
+  "A DX pileup is a thousand grown men screaming their own names at Antarctica.",
+  "HOA: three letters that turn a grown ham into a felon at 2 AM with wire and a slingshot.",
+  "Last project: $40 in parts, $400 in things I broke getting onto the roof.",
+  "CW is just gossip with extra steps.",
+  "Marriage advice: never raise a tower and a sensitive topic in the same weekend.",
+  "The FCC says I'm an Amateur Extra. My wife just says I'm extra.",
+  "Sure, FT8 works great. So does letting the dog operate.",
+  "At my age, '6 meters might open today' is my entire personality.",
+  "I've reached the point where my SWR and my blood pressure are the same number.",
+  "Field Day: camping, but with generators, arguments, and worse food.",
+  "A balun in the hand is worth two in the junk drawer, where I have thirty.",
+  "Forty years of headphones and my hearing's shot. WHAT? Exactly.",
+  "SWR 1.5:1? We called that 'perfect' and went to bed.",
+  "Real radios glow in the dark.",
+  "GET OFF MY FREQUENCY. ...Please. 73."
+];
+/* Regional ribbing — served every once in a while, with love, to the
+   Tar Heel contingent (extra helpings for the Wilmington crowd) */
+const OM_QUIPS_NC=[
+  "Wilmington hams don't need the saltwater setting — they need hurricane insurance for the tower.",
+  "A Wilmington antenna survives everything except September.",
+  "North Carolina hams argue about two things: antennas, and whether BBQ needs tomato. Both end friendships.",
+  "Cape Fear hams love that saltwater DX gain. The salt air loves their PL-259s even more.",
+  "In Wilmington, 'the antenna took a hit' could mean lightning or a pelican.",
+  "NC hams: the only ops who check propagation AND the hurricane tracker before Field Day.",
+  "Eastern NC rule: vinegar on the BBQ, dielectric grease on everything else.",
+  "Wilmington DX plan: saltwater takeoff out front, HOA complaint form out back.",
+  "A Raleigh ham brags about his tower. A Wilmington ham brags his is still standing.",
+  "Blackbeard was just the first Outer Banks ham: big signal, questionable license.",
+  "NC has four antenna seasons: pollen, hurricane, tailgate, repeat."
+];
+let _omDeck=[], _omIdx=0;
+function omShuffle(){
+  const gen=[...OM_QUIPS], nc=[...OM_QUIPS_NC];
+  for(const a of [gen,nc]) for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+  /* deal an NC roast into roughly every 4th slot */
+  _omDeck=[]; let g=0,n=0;
+  while(g<gen.length||n<nc.length){
+    for(let k=0;k<3&&g<gen.length;k++) _omDeck.push(gen[g++]);
+    if(n<nc.length) _omDeck.push(nc[n++]);
+  }
+  _omIdx=0;
+}
+function omQuip(){
+  if(!_omDeck.length||_omIdx>=_omDeck.length) omShuffle();
+  const el=$("omQuip");
+  el.style.opacity="0";
+  setTimeout(()=>{ el.textContent="🎲 "+_omDeck[_omIdx++]+"   — tap for another"; el.style.opacity="1"; },350);
+}
+function surprise(){
+  $("omQuip").classList.add("show");
+  omQuip();
+}
+
+/* ---------- Saved site (yard) profile ---------- */
+let sitePersist=false;   // only auto-save once a profile exists (saved dialog or prior visit)
+const siteStore = {
+  KEY:"wz2p_aw_site",
+  get(){ try{ return JSON.parse(localStorage.getItem(this.KEY)); }catch(e){ return null; } },
+  set(o){ try{ localStorage.setItem(this.KEY, JSON.stringify(o)); }catch(e){} }
+};
+function initSite(){
+  const s=siteStore.get();
+  if(s && s.span){
+    sitePersist=true;
+    $("span").value=s.span;
+    $("height").value=s.height||35;
+    if(s.ground) $("ground").value=s.ground;
+  }else{
+    $("siteModal").style.display="flex";
+    setTimeout(()=>$("smSpan").focus(),50);
+  }
+}
+function closeModal(save){
+  if(save){
+    const span=Math.max(parseFloat($("smSpan").value)||70,1);
+    const height=Math.max(parseFloat($("smHeight").value)||35,1);
+    const ground=$("smGround").value;
+    $("span").value=span; $("height").value=height; $("ground").value=ground;
+    siteStore.set({span,height,ground});
+    sitePersist=true;
+  }
+  $("siteModal").style.display="none";
+  recalc();
+}
+
+/* ---------- Master recalc ---------- */
+function recalc(){
+  const freq=Math.max(parseFloat($("freq").value)||14.2,0.1);
+  let type=$("atype").value;
+  /* VHF/UHF specialist types unlock at 28 MHz (10 m) and up */
+  const vhfOK = freq>=28;
+  document.querySelectorAll("#vhfGroup option").forEach(o=>{o.disabled=!vhfOK; o.hidden=!vhfOK;});
+  if(!vhfOK && ["jpole","slimjim","gp58","moxon"].includes(type)){
+    $("atype").value="dipole"; type="dipole";
+  }
+  $("jExtra").style.display = (type==="jpole"||type==="slimjim")?"block":"none";
+  $("vertExtra").style.display = type==="vert"?"block":"none";
+  if(type==="vert" && $("vertMount").value==="elevated") type="gp";
+  const mat=MATERIALS[$("material").value];
+  const expert=document.body.classList.contains("expert");
+  const gauge=GAUGES[$("gauge").value];
+  const dIn = expert? (parseFloat($("dia").value)||gauge.d) : gauge.d;
+  const dCorr=diaCorrection(freq,dIn);
+  const span=Math.max(parseFloat($("span").value)||1,1);
+  const height=Math.max(parseFloat($("height").value)||1,1);
+  /* keep the height slider in step: range scales with the band so the
+     optimal (λ/2) height is always reachable */
+  const lamFt=983.571/freq;
+  const sMax=Math.max(120, Math.ceil(lamFt*0.65/5)*5);
+  const hs=$("heightSlider");
+  if(parseFloat(hs.max)!==sMax) hs.max=sMax;
+  if(parseFloat(hs.value)!==height) hs.value=Math.min(height,sMax);
+  $("hReadout").textContent=`${height} ft ≈ ${(height/lamFt).toFixed(2)} λ`;
+  const fl=FEEDLINES[$("fline").value];
+  const flen=Math.max(parseFloat($("flen").value)||1,1);
+  const gq=GROUNDS[$("ground").value]||GROUNDS.avg;
+  if(sitePersist) siteStore.set({span, height, ground:$("ground").value});
+  const power=Math.max(parseFloat($("power").value)||100,1);
+  const duty=parseFloat($("mode").value)||0.2;
+
+  $("freqReadout").innerHTML=freq.toFixed(3)+" <small>MHz</small>";
+  /* keep the band preset in step with a hand-entered frequency */
+  const _bi=BANDS.findIndex(([a,b])=>freq>=a&&freq<=b);
+  if(_bi>=0 && $("band").selectedIndex!==_bi) $("band").selectedIndex=_bi;
+  $("vfBadge").textContent="Effective VF ≈ "+(BASE_VF*mat.k).toFixed(3)+"  (k = "+mat.k.toFixed(3)+")";
+  $("fanExtra").style.display = type==="fan"?"block":"none";
+  $("invvAngleWrap").style.display = type==="invv"?"block":"none";
+  $("loopFeedWrap").style.display = type==="loop"?"block":"none";
+  if(!expert) $("dia").value = gauge.d;
+
+  const p={freq,type,matK:mat.k,dCorr,span,height,power,duty,
+    fan2:parseFloat($("fan2").value)||0, fan3:parseFloat($("fan3").value)||0,
+    invvAngle:parseFloat($("invvAngle").value)||120,
+    loopFeed:$("loopFeed").value, jconstr:$("jConstr").value};
+  const D=designAntenna(p);
+
+  /* dims */
+  $("dims").innerHTML=D.dims.map(d=>
+    `<div class="dim"><div class="lbl">${d.l}</div><div class="val">${d.v}</div><div class="sub">${d.s||""}</div></div>`).join("");
+  $("dimNote").textContent=(D.dimNote||"Cut long, then trim in 1–2″ steps while watching SWR — lengthening is a lot harder than shortening.");
+
+  /* scope + DX hop */
+  const {toa,optH}=drawScope(D,height,freq,gq);
+  $("legUser").textContent=height+" ft";
+  $("legOpt").textContent=D.pattern==="monopole"?"n/a":ftIn(optH);
+  $("legToa").textContent="≈"+toa.toFixed(0)+"°";
+  if(toa>=55){
+    $("dxHop").innerHTML=`Main lobe near vertical — <b>NVIS territory</b>: dependable 0–400 mile regional coverage, minimal DX. (Soil: ${gq.name}.)`;
+  }else{
+    const km=hopKm(toa), mi=km*0.6214;
+    const kmO=hopKm(takeoff(patternFn(D,optH,freq,gq)));
+    $("dxHop").innerHTML=`Main lobe at ≈${toa.toFixed(0)}° → single F2 hop ≈ <b>${mi.toFixed(0)} mi (${km.toFixed(0)} km)</b>${D.pattern!=="monopole"&&Math.abs(optH-height)>1?` — at the optimal ${ftIn(optH)} that stretches to ≈ ${(kmO*0.6214).toFixed(0)} mi (${kmO.toFixed(0)} km) per hop`:""}. Multi-hop DX chains from there. (Soil: ${gq.name}.)`;
+  }
+
+  /* azimuth */
+  const lamNow=983.571/freq;
+  $("azNote").textContent=drawAz(D, height/lamNow, freq);
+
+  /* schematic */
+  $("schematic").innerHTML=D.schematic;
+
+  /* radial system */
+  if(D.radialPlan){
+    $("radialCard").style.display="block";
+    $("radialTable").innerHTML=
+      "<tr><th>Tier</th><th>Radials</th><th>Total wire</th><th>What you give up</th></tr>"+
+      D.radialPlan.map(r=>`<tr><td>${r[0]}</td><td class="num">${r[1]}</td><td class="num">${r[2]}</td><td style="font-size:13px">${r[3]}</td></tr>`).join("");
+    $("radialNote").textContent=D.radialNote+(D.pattern==="monopole"&&$("vertMount").value!=="elevated"?`  Soil here: ${gq.name} — estimated ground-system loss at the ★ tier ≈ ${gq.loss.toFixed(1)} dB${gq.loss>2.5?"; poor soil rewards climbing a tier":""}.`:"");
+  }else{
+    $("radialCard").style.display="none";
+  }
+
+  /* matching */
+  const mismatch = fl.bal && D.balun.indexOf("unun")>=0;
+  $("matchTable").innerHTML=`
+    <tr><th>Feed-point impedance</th><td class="num">${D.feedZ}</td></tr>
+    <tr><th>Recommended matching</th><td>${D.balun}</td></tr>
+    <tr><th>Feed line</th><td>${fl.name} · <span class="num">${fl.z} Ω</span></td></tr>
+    <tr><th>Polarization</th><td>${D.pol==="V"?"Vertical":D.pol==="M"?"Mixed (≈45°)":"Horizontal"}</td></tr>`;
+  let mn="";
+  if(fl.bal && (type==="gp"||type==="vert")) mn="Ladder line into an unbalanced vertical is an odd pairing — coax is the natural choice here.";
+  else if(fl.bal) mn="With ladder line, skip the balun at the antenna: run the line straight to a balanced tuner (or a 4:1 balun at the tuner). Loss stays tiny even at high SWR — this is ladder line's superpower.";
+  else if(fl.z===75) mn="RG-6 works fine on a ~70 Ω dipole (nearly perfect match). On 50 Ω gear the 1.5:1 baseline SWR is harmless.";
+  else mn="Keep the coax exiting at a right angle from the antenna for at least ¼ λ, and choke it — feed line radiation is the #1 cause of 'mystery' RFI and pattern skew.";
+  $("matchNote").textContent=mn;
+
+  /* feed line loss — two-term model: k1·√f + k2·f (Times Microwave datasheet form) */
+  const lossPer100=fl.k1*Math.sqrt(freq)+fl.k2*freq;
+  const total=lossPer100*flen/100;
+  const eff=Math.pow(10,-total/10)*100;
+  const wattsOut=100*eff/100;
+  $("lossTable").innerHTML=`
+    <tr><th>Matched loss @ ${freq.toFixed(2)} MHz</th><td class="num">${lossPer100.toFixed(2)} dB / 100 ft</td></tr>
+    <tr><th>Your run (${flen} ft)</th><td class="num">${total.toFixed(2)} dB</td></tr>
+    <tr><th>Power reaching antenna</th><td class="num">${eff.toFixed(1)} %  (${wattsOut.toFixed(1)} W of 100 W)</td></tr>
+    <tr><th>Rule of thumb</th><td>${total<1?'<span style="color:var(--good)">Negligible — don\u2019t spend money here.</span>':total<3?'Acceptable on HF; upgrade coax before adding power.':'<span style="color:var(--warn)">Significant — step up to lower-loss line or shorten the run.</span>'}</td></tr>
+    <tr><th>Model basis</th><td style="font-size:12.5px;color:var(--muted)">k₁·√f + k₂·f form per Times Microwave; LMR-400 uses TMS exact coefficients, others fitted to published attenuation tables (±5% typ. HF). Matched-line loss — high SWR adds more on coax, very little on ladder line.</td></tr>`;
+
+  /* expert content */
+  const bwPct=Math.max(0.02,0.035+0.012*Math.log10(dIn/0.0641));
+  const bw=freq*bwPct;
+  if(expert){
+    /* SWR curve */
+    drawSWR(freq,bw);
+    $("swrNote").textContent=`Series-RLC model from the estimated ${(bw*1000).toFixed(0)} kHz 2:1 bandwidth. If the whole band won't fit under the red 2:1 line, that's physics — not your build. Options: thicker conductor (cage/fan the element), a tuner, or cutting for your favorite segment.`;
+    /* mismatch loss */
+    const S=parseFloat($("swrIn").value)||1.5;
+    $("swrLbl").textContent=S.toFixed(1)+":1";
+    const totS=totalLossAtSWR(total,S);
+    const ladK=FEEDLINES.ladder;
+    const ladMatched=(ladK.k1*Math.sqrt(freq)+ladK.k2*freq)*flen/100;
+    const ladTot=totalLossAtSWR(ladMatched,S);
+    $("swrLossTable").innerHTML=`
+      <tr><th>Matched loss (from above)</th><td class="num">${total.toFixed(2)} dB</td></tr>
+      <tr><th>Total loss at ${S.toFixed(1)}:1</th><td class="num">${totS.toFixed(2)} dB  <span style="color:var(--muted)">(+${(totS-total).toFixed(2)} dB from SWR)</span></td></tr>
+      <tr><th>Same run of 450 Ω ladder line</th><td class="num">${ladTot.toFixed(2)} dB total <span style="color:var(--good)">— this is why doublet owners smile</span></td></tr>`;
+    /* recipes, sag, RF */
+    $("recipes").innerHTML=buildRecipes(D,p,dIn);
+    const sag=buildSag(D,p,$("gauge").value,$("material").value);
+    $("sagTable").innerHTML=sag.rows;
+    $("sagNote").textContent=sag.note;
+    $("rfTable").innerHTML=buildRF(D,p);
+
+    $("expertTable").innerHTML=`
+      <tr><th>Conductor diameter</th><td class="num">${dIn.toFixed(4)}″  (λ/d ≈ ${Math.round((983.571/freq)*12/dIn).toLocaleString()})</td></tr>
+      <tr><th>Diameter length correction</th><td class="num">×${dCorr.toFixed(4)}</td></tr>
+      <tr><th>Est. 2:1 SWR bandwidth</th><td class="num">≈ ${(bw*1000).toFixed(0)} kHz  (±${(bw*500).toFixed(0)} kHz around resonance)</td></tr>
+      <tr><th>Choke recommendation</th><td>≥ 8 turns of coax on an FT-240-31/43 core at the feed point (HF); clamp-on ferrites for VHF</td></tr>`;
+  }
+
+  /* advisor + materials */
+  $("advisor").innerHTML=buildAdvisor(D,p,toa,optH);
+  const fmats=[...D.mats,[fl.name,flen+" ft"],["PL-259 / connectors","2 + spares"]];
+  $("mats").innerHTML=fmats.map(([n,q])=>`<li><span>${n}</span><span class="q">${q}</span></li>`).join("");
+}
+
+/* ---------- Events ---------- */
+$("band").addEventListener("change",e=>{$("freq").value=e.target.value;recalc();});
+["freq","atype","span","height","material","gauge","fline","flen","dia","invvAngle","loopFeed","fan2","fan3","vertMount","ground","power","mode","swrIn","jConstr"]
+  .forEach(id=>$(id).addEventListener("input",recalc));
+/* tabs */
+let curTab="build";
+function showTab(t){
+  curTab=t;
+  document.querySelectorAll("#results .card").forEach(c=>{
+    c.classList.toggle("tabhide", c.dataset.tab!==t);
+  });
+  document.querySelectorAll(".tabbtn").forEach(b=>b.classList.toggle("active",b.dataset.t===t));
+}
+document.querySelectorAll(".tabbtn").forEach(b=>b.addEventListener("click",()=>showTab(b.dataset.t)));
+$("expertToggle").addEventListener("change",e=>{
+  document.body.classList.toggle("expert",e.target.checked);recalc();
+});
+$("unitBtn").addEventListener("click",()=>{
+  METRIC=!METRIC;
+  $("unitBtn").textContent=METRIC?"FT / IN":"METRIC";
+  recalc();
+});
+$("printBtn").addEventListener("click",()=>{ $("printModal").style.display="flex"; });
+$("pmUS").addEventListener("click",()=>doPrint(false));
+$("pmMetric").addEventListener("click",()=>doPrint(true));
+$("pmCancel").addEventListener("click",()=>{ $("printModal").style.display="none"; });
+$("printModal").addEventListener("keydown",e=>{ if(e.key==="Escape") $("printModal").style.display="none"; });
+$("ppPrint").addEventListener("click",()=>{ try{ window.print(); }catch(e){} });
+$("ppBack").addEventListener("click",()=>{ $("printPreview").style.display="none"; });
+$("printPreview").addEventListener("keydown",e=>{ if(e.key==="Escape") $("printPreview").style.display="none"; });
+$("omBtn").addEventListener("click",surprise);
+$("omQuip").addEventListener("click",omQuip);   // the joke itself also advances
+$("mailBtn").addEventListener("click",()=>{
+  const freq=parseFloat($("freq").value)||0;
+  const name=($("atype").selectedOptions[0]||{}).textContent||"antenna";
+  const dims=[...document.querySelectorAll("#dims .dim")]
+    .map(d=>`  ${d.querySelector(".lbl").textContent}: ${d.querySelector(".val").textContent}`)
+    .join("\n");
+  const subject=`Antenna Workbench - ${name} @ ${freq.toFixed(3)} MHz (${BANDNAME(freq)})`;
+  let body=
+`Design summary from the WZ2P Antenna Workbench:
+
+Antenna: ${name}
+Frequency: ${freq.toFixed(3)} MHz (${BANDNAME(freq)})
+Height: ${$("height").value} ft   Span available: ${$("span").value} ft
+Feed line: ${($("fline").selectedOptions[0]||{}).textContent||""} x ${$("flen").value} ft
+
+Dimensions:
+${dims}
+
+73!`;
+  if(body.length>1400) body=body.slice(0,1400)+"\n...\n73!";   // stay well under mailto URL limits
+  const url="mailto:wz2p@yahoo.com?subject="+encodeURIComponent(subject)+"&body="+encodeURIComponent(body);
+  /* anchor-click is the most universally honored way to hand a mailto to the
+     OS default mail app (desktop clients, Gmail handler, iOS/Android mail) */
+  const a=document.createElement("a");
+  a.href=url; a.style.display="none"; a.rel="noopener";
+  document.body.appendChild(a); a.click(); a.remove();
+  const t=$("mailToast");
+  t.innerHTML='Opening your email app addressed to <b style="color:var(--amber)">wz2p@yahoo.com</b>&hellip; If nothing opens, no default mail app is set on this device — email the address directly.';
+  t.style.display="block";
+  clearTimeout(t._h); t._h=setTimeout(()=>{t.style.display="none";},7000);
+});
+$("themeBtn").addEventListener("click",()=>{
+  const root=document.documentElement;
+  const light=root.getAttribute("data-theme")==="light";
+  root.setAttribute("data-theme",light?"dark":"light");
+  $("themeBtn").textContent=light?"Light":"Dark";
+  recalc();
+});
+$("heightSlider").addEventListener("input",e=>{
+  $("height").value=e.target.value;
+  recalc();
+});
+$("smSave").addEventListener("click",()=>closeModal(true));
+$("smSkip").addEventListener("click",()=>closeModal(false));
+$("siteModal").addEventListener("keydown",e=>{ if(e.key==="Enter") closeModal(true); if(e.key==="Escape") closeModal(false); });
+showTab("build");
+initSite();
+recalc();   // opens quiet — jokes only appear when someone presses Surprise me!
+</script>
+</body>
+</html>
