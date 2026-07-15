@@ -22,6 +22,12 @@
   --scope-bg:#0a0f0a;
   --scope-grid:#1d3320;
   --focus:#ffd35c;
+  --core:#33383f;
+  --core-hi:#565f6b;
+  --core-shine:rgba(255,255,255,.20);
+  --wireA:#ffb000;
+  --wireB:#57d99a;
+  --wireC:#7fb8ff;
 }
 [data-theme="light"]{
   --bg:#eef0f2;
@@ -38,6 +44,12 @@
   --scope-bg:#101510;
   --scope-grid:#24402a;
   --focus:#8a5a00;
+  --core:#4a4642;
+  --core-hi:#736c64;
+  --core-shine:rgba(255,255,255,.35);
+  --wireA:#b3660b;
+  --wireB:#188a56;
+  --wireC:#1f6fb3;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{
@@ -132,12 +144,18 @@ ul.mat li{padding:7px 0;border-bottom:1px dashed var(--line);font-size:15px;disp
 ul.mat li span.q{font-family:'Share Tech Mono',monospace;color:var(--amber);white-space:nowrap}
 .note{font-size:13.5px;color:var(--muted);margin-top:10px;border-left:3px solid var(--amber-dim);padding-left:10px}
 footer{padding:16px 28px 30px;color:var(--muted);font-size:12px;text-align:center}
+.balblock{border:1px solid var(--line);border-radius:10px;padding:12px 16px;margin-bottom:12px;background:var(--scope-bg)}
+.balhead{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:8px}
+.balhead b{color:var(--amber);font-size:16px}
+.balhead span{color:var(--muted);font-size:13.5px}
+.balrow{font-size:14.5px;padding:3px 0;line-height:1.5}
+.ballbl{display:inline-block;min-width:150px;color:var(--muted);font-size:12.5px;text-transform:uppercase;letter-spacing:.06em}
 .tabbar{
-  display:flex;gap:6px;margin-bottom:16px;position:sticky;top:0;z-index:20;
+  display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px;position:sticky;top:0;z-index:20;
   background:var(--bg);padding:10px 0 12px;border-bottom:1px solid var(--line);
 }
 .tabbtn{
-  flex:1;background:var(--panel);border:1px solid var(--line);color:var(--muted);
+  flex:1;min-width:110px;background:var(--panel);border:1px solid var(--line);color:var(--muted);
   border-radius:8px;padding:10px 6px;cursor:pointer;font-family:'Saira Condensed',sans-serif;
   font-size:15px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;
 }
@@ -291,7 +309,10 @@ body.oldman .tabbtn{font-size:18px}
       <option value="fan">Fan dipole (multi-band)</option>
       <option value="loop">Full-wave loop (square / quad)</option>
       <option value="vert">¼-wave vertical / ground plane</option>
-      <option value="yagi3">3-element Yagi beam</option>
+      <option value="yagi3">Yagi beam (3+ elements)</option>
+      <option value="quad">Cubical quad (2+ elements)</option>
+      <option value="lpda">Log-periodic dipole array (LPDA)</option>
+      <option value="randwire">End-fed random wire (9:1 / 49:1 / 64:1 unun)</option>
       <optgroup label="VHF/UHF specialists — 10 m &amp; up" id="vhfGroup">
         <option value="jpole">J-Pole (½-wave + J stub)</option>
         <option value="slimjim">Slim Jim (folded J)</option>
@@ -299,6 +320,73 @@ body.oldman .tabbtn{font-size:18px}
         <option value="moxon">Moxon rectangle (compact 2-el beam)</option>
       </optgroup>
     </select>
+    <div id="lpdaExtra" style="display:none">
+      <div class="row">
+        <div>
+          <label for="lpLow">Lowest band</label>
+          <select id="lpLow">
+            <option value="7">40 m (7 MHz)</option>
+            <option value="14" selected>20 m (14 MHz)</option>
+            <option value="21">15 m (21 MHz)</option>
+            <option value="28">10 m (28 MHz)</option>
+            <option value="50">6 m (50 MHz)</option>
+            <option value="144">2 m (144 MHz)</option>
+          </select>
+        </div>
+        <div>
+          <label for="lpHigh">Highest frequency</label>
+          <select id="lpHigh">
+            <option value="30" selected>30 MHz (top of HF)</option>
+            <option value="54">54 MHz (thru 6 m)</option>
+            <option value="148">148 MHz (thru 2 m)</option>
+            <option value="450">450 MHz (thru 70 cm)</option>
+          </select>
+        </div>
+      </div>
+      <div class="expert-only">
+        <div class="row">
+          <div>
+            <label for="lpTau">τ (taper)</label>
+            <input type="number" id="lpTau" value="0.88" min="0.80" max="0.94" step="0.01">
+          </div>
+          <div>
+            <label for="lpSigma">σ (spacing)</label>
+            <input type="number" id="lpSigma" value="0.05" min="0.03" max="0.08" step="0.005">
+          </div>
+        </div>
+        <p class="hint">Higher τ / σ = more gain, more elements, longer boom. Carrel curves: τ 0.88, σ 0.05 ≈ 6.5 dBi.</p>
+      </div>
+    </div>
+    <div id="rwExtra" style="display:none">
+      <label for="rwUnun">Unun ratio</label>
+      <select id="rwUnun">
+        <option value="9" selected>9:1 — non-resonant random wire + tuner</option>
+        <option value="49">49:1 — resonant half-wave (EFHW style)</option>
+        <option value="64">64:1 — high-Z installs (thin wire, in the clear)</option>
+      </select>
+      <label for="rwLen">Wire length</label>
+      <select id="rwLen"></select>
+      <p class="hint" id="rwHint"></p>
+    </div>
+    <div id="yagiExtra" style="display:none">
+      <label for="yagiEls">Number of elements</label>
+      <select id="yagiEls">
+        <option value="3" selected>3 — REF + DE + 1 director</option>
+        <option value="4">4 — + 2 directors</option>
+        <option value="5">5 — + 3 directors</option>
+        <option value="6">6 — + 4 directors</option>
+      </select>
+    </div>
+    <div id="quadExtra" style="display:none">
+      <label for="quadEls">Number of elements</label>
+      <select id="quadEls">
+        <option value="2" selected>2 — driven + reflector (the classic)</option>
+        <option value="3">3 — + 1 director</option>
+        <option value="4">4 — + 2 directors</option>
+        <option value="5">5 — + 3 directors</option>
+      </select>
+      <p class="hint">Each added director buys ~1 dB and a longer boom. Past 4 elements the returns get thin — the boom doesn't.</p>
+    </div>
     <div id="jExtra" style="display:none">
       <label for="jConstr">Construction</label>
       <select id="jConstr">
@@ -424,6 +512,9 @@ body.oldman .tabbtn{font-size:18px}
     <button class="tabbtn active" data-t="build">Build</button>
     <button class="tabbtn" data-t="patterns">Patterns</button>
     <button class="tabbtn" data-t="feed">Feed System</button>
+    <button class="tabbtn" data-t="matching" id="tabMatching" style="display:none">Matching</button>
+    <button class="tabbtn" data-t="baluns">Baluns</button>
+    <button class="tabbtn" data-t="ladder">Ladder Line</button>
     <button class="tabbtn" data-t="site">Site &amp; Safety</button>
   </div>
 
@@ -453,9 +544,32 @@ body.oldman .tabbtn{font-size:18px}
     <p class="note" id="azNote"></p>
   </div>
 
+  <div class="card" data-tab="build" id="lpdaCard" style="display:none">
+    <h2>LPDA Element Cut Table</h2>
+    <table id="lpdaTable"><tbody></tbody></table>
+    <p class="note">Position is measured from the rear (longest) element. Center-feed every element from the criss-crossed feeder, alternating sides each element — that transposition IS the log-periodic.</p>
+  </div>
+
   <div class="card" data-tab="build">
     <h2>Schematic</h2>
     <div id="schematic"></div>
+  </div>
+
+  <div class="card" data-tab="matching">
+    <h2>Matching Network — Build Drawings</h2>
+    <div id="mnImg"></div>
+  </div>
+
+  <div class="card" data-tab="matching">
+    <h2>Matching Network — Build Dimensions</h2>
+    <table id="mnBuild"><tbody></tbody></table>
+    <p class="note" id="mnNote"></p>
+  </div>
+
+  <div class="card" data-tab="matching">
+    <h2>Direct 50 Ω Coax Feed — Simulated (no matching network)</h2>
+    <table id="mnDirect"><tbody></tbody></table>
+    <p class="note" id="mnDirectNote"></p>
   </div>
 
   <div class="card" data-tab="feed">
@@ -508,6 +622,55 @@ body.oldman .tabbtn{font-size:18px}
     <h2>FCC RF Exposure (OET-65 estimate)</h2>
     <table id="rfTable"><tbody></tbody></table>
     <p class="note">Far-field estimate per FCC OET Bulletin 65 with 2.56× ground-reflection factor and 50% transmit time. Every US station must perform an RF exposure evaluation — this is a screening estimate, not a substitute for the full worksheet in near-field situations (closer than ~λ/2π).</p>
+  </div>
+
+  <div class="card" data-tab="baluns">
+    <h2>Balun &amp; Unun Selector — Power Checked Live</h2>
+    <table id="balTable"><tbody></tbody></table>
+    <p class="note" id="balNote"></p>
+  </div>
+
+  <div class="card" data-tab="baluns">
+    <h2>Winding Diagrams</h2>
+    <div id="balImg"></div>
+  </div>
+
+  <div class="card" data-tab="baluns">
+    <h2>Core Mixes &amp; The Derating Math</h2>
+    <table id="coreTable"><tbody>
+      <tr><th>Mix #31</th><td>The choking champion 160–40 m; good through HF. First pick for 1:1 common-mode chokes.</td></tr>
+      <tr><th>Mix #43</th><td>The general-purpose HF transformer mix — 9:1, 49:1, 64:1 ununs and 4:1 baluns live here.</td></tr>
+      <tr><th>Mix #52</th><td>Lower loss at HF than #43 — the high-power transformer upgrade before you resort to big stacks.</td></tr>
+      <tr><th>Mix #61</th><td>VHF work (50 MHz +). Wrong tool below 20 m.</td></tr>
+      <tr><th>Powdered iron (T-series)</th><td>For tuned circuits and inductors — NOT for these broadband transformers.</td></tr>
+      <tr><th>Safe dissipation</th><td class="num">FT-140 ≈ 8 W · FT-240 ≈ 16 W continuous, free air. Stacking n cores ≈ n× dissipation AND n× power capability.</td></tr>
+      <tr><th>The math</th><td class="num">Heat = P<sub>PEP</sub> × duty × 50 % tx-time × loss-fraction → cores = ⌈heat ÷ per-core dissipation⌉</td></tr>
+      <tr><th>Voltage vs heat</th><td>Insulation and capacitors are stressed by <b>PEP</b> (instantaneous volts); cores are cooked by <b>average power</b> (duty). Derate each by its own physics.</td></tr>
+    </tbody></table>
+  </div>
+
+  <div class="card" data-tab="ladder">
+    <h2>Your Homebrew Ladder Line — Calculated</h2>
+    <table id="llCalc"><tbody></tbody></table>
+    <p class="note" id="llNote"></p>
+  </div>
+
+  <div class="card" data-tab="ladder">
+    <h2>Build It — Fence-Insulator Spreaders</h2>
+    <div id="llImg"></div>
+    <div class="recipe" id="llSteps"></div>
+  </div>
+
+  <div class="card" data-tab="ladder">
+    <h2>Spacing Options</h2>
+    <table id="llSpace"><tbody></tbody></table>
+    <p class="note">Wider spacing raises Z₀ and trims loss slightly, but past ~4″ the returns are tiny and wind-twist risk grows. 4″ with cheap fence insulators is the sweet spot: near-open-wire loss at farm-store prices.</p>
+  </div>
+
+  <div class="card" data-tab="ladder">
+    <h2>Feeder Lengths to Avoid (doublet service)</h2>
+    <table id="llAvoid"><tbody></tbody></table>
+    <p class="note" id="llAvoidNote"></p>
   </div>
 
   <div class="card" data-tab="site">
@@ -828,25 +991,34 @@ function designAntenna(p){
   }
 
   else if(type==="yagi3"){
-    const drv=(473/freq)*k, ref=(495/freq)*k, dir=(452/freq)*k;
-    const sp=0.15*lam, boom=2*sp;
-    D.name="3-element Yagi";
-    D.pattern="yagi";
+    /* W2PV-lineage scaling: directors taper shorter, spacing opens with boom */
+    const n=Math.min(Math.max(p.yagiEls||3,3),6);
+    const ref=(495/freq)*k, drv=(473/freq)*k;
+    const DIRS=[452,449,446,443].map(c=>(c/freq)*k).slice(0,n-2);
+    const SPACES=[0.15,0.15,0.20,0.25,0.30].slice(0,n-1).map(s=>s*lam);
+    const boom=SPACES.reduce((a,b)=>a+b,0);
+    const GAIN=[8.0,9.2,10.2,11.0], FB=[18,20,22,23], HPBW=[64,56,50,46], RFEED=[22,23,25,25];
+    D.name=n+"-element Yagi";
+    D.pattern="yagi"; D.yagiN=n;
+    D.gainDbi=GAIN[n-3]; D.fbDb=FB[n-3]; D.hpbw=HPBW[n-3]; D.feedR=RFEED[n-3];
     D.dims=[
       {l:"Reflector",v:ftIn(ref),s:ftS(ref)},
-      {l:"Driven element",v:ftIn(drv),s:ftS(drv)},
-      {l:"Director",v:ftIn(dir),s:ftS(dir)},
-      {l:"Element spacing",v:ftIn(sp),s:"0.15 λ each"},
-      {l:"Boom length",v:ftIn(boom),s:"≈0.30 λ + ends"}
+      {l:"Driven element",v:ftIn(drv),s:"shorten 1.5–2 % if hairpin-matched"}
     ];
-    D.wireFt=ref+drv+dir; D.span=ref;
-    D.feedZ="~20–25 Ω at the driven element";
-    D.balun="Gamma match or hairpin (beta) match to 50 Ω + 1:1 choke balun";
-    D.schematic=svgYagi(ref,drv,dir,sp);
-    D.mats=[["Aluminum tubing (elements)",ftS((ref+drv+dir)*1.05,0)],["Boom (2″ tubing)",ftS(boom+2,0)],
-            ["Element-to-boom clamps","3 sets"],["Gamma/hairpin match kit","1"],
+    DIRS.forEach((d,i)=>D.dims.push({l:"Director "+(i+1),v:ftIn(d),s:ftS(d)}));
+    SPACES.forEach((s,i)=>{
+      const lbl=i===0?"REF → DE spacing":(i===1?"DE → D1 spacing":"D"+(i-1)+" → D"+i+" spacing");
+      D.dims.push({l:lbl,v:ftIn(s),s:[0.15,0.15,0.20,0.25,0.30][i].toFixed(2)+" λ"});
+    });
+    D.dims.push({l:"Boom length",v:ftIn(boom),s:"+ end stubs"});
+    D.wireFt=ref+drv+DIRS.reduce((a,b)=>a+b,0); D.span=Math.max(ref,boom);
+    D.feedZ="≈"+D.feedR+" Ω at the driven element ("+n+" elements)";
+    D.balun="Hairpin (beta) or gamma match to 50 Ω + 1:1 choke — full build drawings on the Matching tab";
+    D.schematic=svgYagiN(n,[ref,drv].concat(DIRS),SPACES,boom);
+    D.mats=[["Aluminum tubing (elements)",ftS(D.wireFt*1.05,0)],["Boom (2″ tubing)",ftS(boom+2,0)],
+            ["Element-to-boom clamps",n+" sets"],["Gamma/hairpin match hardware","1"],
             ["1:1 choke balun","1"],["Mast + rotator","1"]];
-    D.dimNote="Free-space gain ≈ 7–8 dBi, F/B ≈ 15–20 dB. Dimensions are a proven starting point — model or trim for your exact frequency.";
+    D.dimNote="Free-space gain ≈ "+D.gainDbi.toFixed(1)+" dBi, F/B ≈ "+D.fbDb+" dB. Proven starting dimensions — long-boom designs reward on-site trimming or modeling for your exact frequency.";
   }
 
   else if(type==="jpole"){
@@ -959,6 +1131,107 @@ function designAntenna(p){
     D.dimNote="Free-space gain ≈ 5.5–6 dBi with a stunning 25–30 dB front-to-back — it hears in ONE direction. Turning radius is barely half a Yagi's.";
   }
 
+  else if(type==="lpda"){
+    /* Carrel/DuHamel LPDA synthesis: l₁ = λ/2 at f_low, lₙ₊₁ = τ·lₙ,
+       spacing dₙ = 2σ·lₙ, active-region margin 1.35 at f_high */
+    const tau=Math.min(Math.max(p.lpTau,0.80),0.94), sig=Math.min(Math.max(p.lpSigma,0.03),0.08);
+    const fL=p.lpLow, fH=Math.max(p.lpHigh,fL*1.5);
+    const l1=(491.8/fL);
+    const lStop=(491.8/fH)/1.35;
+    const lens=[], gaps=[];
+    let L=l1;
+    while(L>lStop && lens.length<40){ lens.push(L); gaps.push(2*sig*L); L*=tau; }
+    gaps.pop();
+    const boom=gaps.reduce((a,b)=>a+b,0);
+    const N=lens.length;
+    const gain=4.0+((tau-0.80)/0.14)*2.0+((sig-0.03)/0.05)*1.5;   // Carrel-curve approximation
+    D.name="LPDA "+fL+"–"+fH+" MHz ("+N+" el)";
+    D.pattern="lpda"; D.gainDbi=gain; D.fbDb=15; D.hpbw=62; D.feedR=65;
+    D.lpda={lens,gaps,boom,tau,sig,fL,fH,N};
+    D.dims=[
+      {l:"Elements",v:String(N),s:"τ = "+tau.toFixed(2)+", σ = "+sig.toFixed(3)},
+      {l:"Longest element (rear)",v:ftIn(l1),s:"½ λ at "+fL+" MHz"},
+      {l:"Shortest element (front)",v:ftIn(lens[N-1]),s:"covers to "+fH+" MHz"},
+      {l:"Boom length",v:ftIn(boom),s:"feeder criss-crosses along it"},
+      {l:"Frequency coverage",v:fL+"–"+fH+" MHz",s:"continuous — every band in between"}
+    ];
+    D.wireFt=lens.reduce((a,b)=>a+b,0); D.span=Math.max(l1,boom);
+    D.optH=(983.571/fL)/2;
+    D.feedZ="≈65 Ω at the front apex via the transposed feeder";
+    D.balun="Coax routed inside one boom tube = built-in infinite balun (see Matching tab); wire versions use 300 Ω line + 4:1";
+    D.schematic=svgLPDA(lens,gaps,boom,fL,fH);
+    D.mats=[["Element stock (tubing or wire)",ftS(D.wireFt*1.05,0)],
+            ["Twin booms (feeder pair), each",ftS(boom+1,0)],
+            ["Boom insulator blocks",String(N)+"+"],
+            ["Coax (routed through rear of one boom)","your run"],
+            ["Mast + rotator (HF sizes)","1"]];
+    D.dimNote="Full per-element cut table below the schematic. The magic: gain and pattern stay nearly constant across the whole "+fL+"–"+fH+" MHz span — no traps, no tuner.";
+  }
+
+  else if(type==="randwire"){
+    const ratio=parseInt(p.rwUnun)||9;
+    const L=p.rwLen||71;
+    const zTarget=50*ratio;
+    D.name="Random wire + "+ratio+":1 unun";
+    D.dims=[
+      {l:"Wire length",v:ftIn(L),s:ratio===9?"chosen to dodge λ/2 resonances":"resonant half-wave family"},
+      {l:"Unun ratio",v:ratio+":1",s:"designs for ≈"+zTarget+" Ω at the feed"},
+      {l:"Counterpoise",v:ftIn(Math.max(13,lam*0.05)),s:"13–17 ft minimum, or the coax shield via a choke"},
+      {l:"Wavelength (design freq)",v:ftS(lam,1),s:BANDNAME(freq)}
+    ];
+    D.wireFt=L+Math.max(13,lam*0.05); D.span=L;
+    D.feedZ = ratio===9
+      ? "A few hundred Ω, wildly frequency-dependent — ÷9 lands inside a tuner's happy zone on every band"
+      : "≈"+zTarget+" Ω at half-wave resonance — ÷"+ratio+" ≈ 50 Ω, no tuner on resonant bands";
+    D.balun=ratio+":1 unun at the feed + common-mode choke a few feet down the coax (winding recipe on the Baluns tab)";
+    D.schematic=svgRandWire(L,ratio,Math.max(13,lam*0.05));
+    D.mats=[["Antenna wire",ftS(L*1.08,0)],[ratio+":1 unun (see Baluns tab)","1"],
+            ["Counterpoise wire",ftS(Math.max(13,lam*0.05)*1.1,0)],
+            ["Common-mode choke","1"],["End insulator + rope","1 set"]];
+    D.dimNote = ratio===9
+      ? "The whole art of the 9:1 random wire is the length list — each avoids being a half-wave on any HF band, where the impedance would rocket beyond any tuner."
+      : "Cut for the lowest band; harmonics give you the higher bands free. 64:1 shines when thin wire mounted high in the clear pushes the end impedance past 3 kΩ.";
+  }
+
+  else if(type==="quad"){
+    /* Cubical quad, Orr/Cebik-lineage dimensions:
+       DE 1005/f, REF 1030/f, directors 975/f; progressive spacing. */
+    const n=Math.min(Math.max(p.quadEls||2,2),5);
+    const cDE=(1005/freq)*k, cREF=(1030/freq)*k, cDIR=(975/freq)*k;
+    const SPACES=[0.14,0.16,0.18,0.20];            // REF→DE, DE→D1, D1→D2, D2→D3 (λ)
+    const spacings=SPACES.slice(0,n-1).map(s=>s*lam);
+    const boom=spacings.reduce((a,b)=>a+b,0);
+    const GAIN=[7.1,8.8,9.8,10.5], FB=[18,22,25,25], HPBW=[72,64,58,54];
+    const RFEED=[100,60,55,50];
+    D.name=n+"-element cubical quad";
+    D.pattern="quad"; D.quadN=n;
+    D.gainDbi=GAIN[n-2]; D.fbDb=FB[n-2]; D.hpbw=HPBW[n-2]; D.feedR=RFEED[n-2];
+    D.dims=[
+      {l:"Reflector loop",v:ftIn(cREF),s:"side "+ftIn(cREF/4)},
+      {l:"Driven loop",v:ftIn(cDE),s:"side "+ftIn(cDE/4)}
+    ];
+    for(let i=0;i<n-2;i++) D.dims.push({l:"Director "+(i+1)+" loop",v:ftIn(cDIR),s:"side "+ftIn(cDIR/4)});
+    spacings.forEach((s,i)=>{
+      const lbl=i===0?"REF → DE spacing":(i===1?"DE → D1 spacing":"D"+(i-1)+" → D"+i+" spacing");
+      D.dims.push({l:lbl,v:ftIn(s),s:SPACES[i].toFixed(2)+" λ"});
+    });
+    D.dims.push({l:"Boom length",v:ftIn(boom),s:"+ end stubs"});
+    D.dims.push({l:"Spreader arms (hub → corner)",v:ftIn(cDE*0.0884),s:"8 per element (X-frame) — fiberglass"});
+    D.wireFt=cREF+cDE+cDIR*(n-2);
+    D.span=Math.max(boom, cDE*0.354);
+    D.optH=lam/2;
+    D.feedZ="≈"+D.feedR+" Ω at the driven loop ("+n+" elements)"+(n===2?" — a 75 Ω ¼-wave Q-section makes it 50 Ω":" — close enough for direct 50 Ω feed");
+    D.balun=(n===2?"75 Ω quarter-wave matching section (Q-section), then":"Direct 50 Ω feed with")+" a 1:1 current choke at the feed point";
+    D.schematic=svgQuad(n,[cREF,cDE].concat(Array(n-2).fill(cDIR)),spacings,boom);
+    D.mats=[["Antenna wire",ftS(D.wireFt*1.08,0)],
+            ["Fiberglass spreader arms, "+ftIn(cDE*0.0884)+" ea",String(n*4)],
+            ["Spider hubs / boom-to-spreader mounts",String(n)],
+            ["Boom (1.5–2″ tubing)",ftS(boom*1.1,0)],
+            (n===2?["RG-59/RG-11 for Q-section","see Matching tab"]:["—","—"]),
+            ["1:1 choke balun","1"]].filter(r=>r[0]!=="—");
+    D.dimNote="Free-space gain ≈ "+D.gainDbi.toFixed(1)+" dBi, F/B ≈ "+D.fbDb+" dB. Quads hold their gain lower to the ground than Yagis and shrug off rain static. Tune the driven loop for resonance, the reflector for best F/B.";
+  }
+
   return D;
 }
 
@@ -995,11 +1268,13 @@ function patternFn(D, hFt, freq, gq){
 /* azimuth pattern (relative field vs bearing; 0 = broadside / boom-forward) */
 function azFn(D, hL){
   if(D.pattern==="monopole") return ()=>1;
-  if(D.pattern==="yagi"){
+  if(D.pattern==="yagi"||D.pattern==="lpda"){
+    const kk=Math.log(0.7071)/Math.log(Math.cos(((D.hpbw||64)/4)*Math.PI/180));
+    const bk=Math.pow(10,-(D.fbDb||18)/20);
     return function(azDeg){
       const p=azDeg*Math.PI/180;
-      const main=Math.pow(Math.max(Math.cos(p/2),0),8.8);     // HPBW ≈ 64°
-      const back=Math.abs(azDeg)>90 ? 0.126*Math.pow(Math.cos(p),2) : 0;  // F/B ≈ 18 dB
+      const main=Math.pow(Math.max(Math.cos(p/2),0),kk);
+      const back=Math.abs(azDeg)>90 ? bk*Math.pow(Math.cos(p),2) : 0;
       return Math.max(main,back);
     };
   }
@@ -1008,6 +1283,16 @@ function azFn(D, hL){
       const p=azDeg*Math.PI/180;
       const main=Math.pow(Math.max(Math.cos(p/2),0),5.8);     // HPBW ≈ 78°
       const back=Math.abs(azDeg)>90 ? 0.04*Math.pow(Math.cos(p),2) : 0;  // F/B ≈ 28 dB
+      return Math.max(main,back);
+    };
+  }
+  if(D.pattern==="quad"){
+    const kk=Math.log(0.7071)/Math.log(Math.cos((D.hpbw/4)*Math.PI/180));
+    const bk=Math.pow(10,-D.fbDb/20);
+    return function(azDeg){
+      const p=azDeg*Math.PI/180;
+      const main=Math.pow(Math.max(Math.cos(p/2),0),kk);
+      const back=Math.abs(azDeg)>90 ? bk*Math.pow(Math.cos(p),2) : 0;
       return Math.max(main,back);
     };
   }
@@ -1197,19 +1482,25 @@ function svgVert(Rl,rad,elev){
   }
   return out+"</svg>";
 }
-function svgYagi(ref,drv,dir,sp){
-  const cy=150, x0=200, gap=240;
-  const h=L=>Math.max(70,130*(L/ref));
-  return S_HEAD+
-   sLine(x0-40,cy,x0+2*gap+40,cy,4)+sMut(x0+gap/2,cy+112,"boom "+ftIn(2*sp))+
-   sLine(x0,cy-h(ref),x0,cy+h(ref),4)+sTxt(x0,cy-h(ref)-10,"REF "+ftIn(ref))+
-   sLine(x0+gap,cy-h(drv),x0+gap,cy+h(drv),4)+sTxt(x0+gap,cy-h(drv)-10,"DRV "+ftIn(drv))+sFeed(x0+gap,cy)+
-   sLine(x0+2*gap,cy-h(dir),x0+2*gap,cy+h(dir),4)+sTxt(x0+2*gap,cy-h(dir)-10,"DIR "+ftIn(dir))+
-   sMut(x0+gap/2,cy+62,"spacing "+ftIn(sp))+
-   sMut(x0+gap+gap/2,cy+62,"spacing "+ftIn(sp))+
-   `<path d="M ${x0+2*gap+60} ${cy} l 50 0 m -12 -9 l 12 9 l -12 9" stroke="var(--good)" stroke-width="2.5" fill="none"/>`+
-   sMut(x0+2*gap+85,cy-16,"fwd")+
-  "</svg>";
+function svgYagiN(n,lens,spacings,boom){
+  const cy=150, x0=140, xSpan=640;
+  const totS=spacings.reduce((a,b)=>a+b,0)||1;
+  const xs=[x0]; spacings.forEach(s=>xs.push(xs[xs.length-1]+xSpan*(s/totS)));
+  const lMax=Math.max(...lens), hMax=104;
+  const names=["REF","DE"].concat(Array.from({length:n-2},(_,i)=>"D"+(i+1)));
+  let out=S_HEAD+sLine(x0-36,cy,xs[xs.length-1]+36,cy,4);
+  lens.forEach((L,i)=>{
+    const h=Math.max(58,hMax*(L/lMax)), x=xs[i];
+    out+=sLine(x,cy-h,x,cy+h,4);
+    const yLab = (i%2===0)? cy-h-12 : cy-h-38;   // alternate label lanes
+    out+=sTxt(x,yLab,names[i]+" "+ftIn(L),"middle",18);
+    if(i===1) out+=sFeed(x,cy);
+  });
+  spacings.forEach((s,i)=>{ out+=sMut((xs[i]+xs[i+1])/2,cy+hMax+34,ftIn(s),"middle",15); });
+  out+=sMut(x0+xSpan/2,cy+hMax+62,"boom "+ftIn(boom));
+  out+=`<path d="M ${xs[xs.length-1]+56} ${cy} l 50 0 m -12 -9 l 12 9 l -12 9" stroke="var(--good)" stroke-width="2.5" fill="none"/>`+
+       sMut(xs[xs.length-1]+81,cy-16,"fwd");
+  return out+"</svg>";
 }
 
 /* ---------- Azimuth scope ---------- */
@@ -1245,7 +1536,7 @@ function drawAz(D, hL, freq){
   ctx.closePath();ctx.stroke();ctx.restore();
   /* orientation labels */
   ctx.fillStyle=MUT;
-  if(D.pattern==="yagi"||D.pattern==="moxon"){
+  if(D.pattern==="yagi"||D.pattern==="moxon"||D.pattern==="quad"||D.pattern==="lpda"){
     ctx.save();ctx.strokeStyle=GOOD;ctx.lineWidth=2.5;
     ctx.beginPath();ctx.moveTo(cx,cy-R-6);ctx.lineTo(cx,cy-R-26);
     ctx.moveTo(cx-7,cy-R-18);ctx.lineTo(cx,cy-R-26);ctx.lineTo(cx+7,cy-R-18);ctx.stroke();ctx.restore();
@@ -1254,7 +1545,8 @@ function drawAz(D, hL, freq){
     ctx.fillText("BROADSIDE",cx,cy-R-12);
     ctx.fillText("wire axis →",cx+R-36,cy+4);
   }
-  return D.pattern==="yagi" ? "HPBW ≈ 64°, front-to-back ≈ 18 dB (3-element model)." :
+  return (D.pattern==="quad"||D.pattern==="lpda") ? `HPBW ≈ ${D.hpbw}°, front-to-back ≈ ${D.fbDb} dB, gain ≈ ${D.gainDbi.toFixed(1)} dBi (${D.pattern==="lpda"?"log-periodic":"quad"} model).${D.pattern==="quad"?" Quads are famously quiet receivers.":" One antenna, the whole spectrum."}` :
+         D.pattern==="yagi" ? `HPBW ≈ ${D.hpbw||64}°, front-to-back ≈ ${D.fbDb||18} dB, gain ≈ ${(D.gainDbi||8).toFixed(1)} dBi (${D.yagiN||3}-element model).` :
          D.pattern==="moxon" ? "HPBW ≈ 78°, front-to-back ≈ 28 dB — the Moxon trades a little forward gain for near-total rejection off the back. Point the quiet side at your noise source." :
          D.pattern==="monopole" ? "Omnidirectional — a vertical hears (and is heard) equally in all directions." :
          "Figure-8 broadside to the wire. Lower heights round the nulls out toward omni — at NVIS heights the direction barely matters.";
@@ -1323,7 +1615,8 @@ function buildRecipes(D,p,dIn){
               : P<=600 ? "12 turns of RG-400 (PTFE) on an FT-240-31 — RG-58 dielectric runs hot above ~150 W"
               : "12 turns of RG-400 on two stacked FT-240-31 cores (legal-limit duty)";
   if(p.type==="efhw"){
-    const core = P<=120 ? "FT-140-43" : P<=500 ? "FT-240-43" : "2 × FT-240-43 stacked";
+    const heat=xfmrHeat(P,p.duty||0.2,0.10);
+    const core = heat<=8 ? "FT-140-43 (heat "+heat.toFixed(1)+" W)" : heat<=16 ? "FT-240-43 (heat "+heat.toFixed(1)+" W)" : Math.ceil(heat/16)+" × FT-240-43 stacked — or FT-240-52 ("+heat.toFixed(1)+" W to shed)";
     out.push(["49:1 Unun (matching transformer)",
       `Core: <span class="num">${core}</span> at your ${P} W. Wind <span class="num">2 : 14 turns</span> (autotransformer style, tap at turn 2). `+
       (f>=18?`Add a <span class="num">100 pF / 3 kV</span> compensation capacitor across the primary — it flattens 15–10 m noticeably.`:
@@ -1387,6 +1680,26 @@ function buildRecipes(D,p,dIn){
     out.push(["Frame & wire",
       `X-frame of four fiberglass arms on a hub; run the wire through end caps or small eyes. The tip gap <span class="num">C = ${ftIn(C)}</span> sets the coupling — hold it within <span class="num">±¼″</span> with a rigid spacer (acrylic, PVC). Everything else tolerates an inch.`]);
     out.push(["Feed",`Break the driven element at the center of side A, feed directly with 50 Ω through ${choke.toLowerCase()}. If SWR sits high, adjust the C gap before touching anything else.`]);
+  }else if(p.type==="randwire"){
+    const ratio=parseInt(p.rwUnun)||9;
+    const loss={9:0.06,49:0.10,64:0.12}[ratio];
+    const heat=xfmrHeat(P,p.duty||0.2,loss);
+    const plan= heat<=8?"single FT-140-43":heat<=16?"single FT-240-43":Math.ceil(heat/16)+" × FT-240 stacked (or #52)";
+    const wind={9:"9 trifilar turns, series-connected (3²)",49:"2 : 14 turns, tap at 2, +100 pF comp cap",64:"2 : 16 turns, tap at 2"}[ratio];
+    out.push([ratio+":1 unun — duty-derated for your "+P+" W",
+      `Core: <span class="num">${plan}</span> (${heat.toFixed(1)} W of transformer heat at your mode's duty). Winding: <span class="num">${wind}</span>. Full physics on the Baluns tab.`]);
+    out.push(["Counterpoise",`At least <span class="num">13–17 ft</span> laid along the ground, or let the choked coax shield serve — but ONE of them must exist, or the unun has nothing to push against.`]);
+    out.push(["Choke",choke+", 6–10 ft down the coax from the unun."]);
+  }else if(p.type==="lpda"){
+    out.push(["Element mounting",`Insulated blocks on both booms; alternate which boom each element ties to — that alternation is the phase transposition. Keep the pattern religious.`]);
+    out.push(["Coax routing",`Enter the REAR of one boom, exit at the FRONT apex: center to the opposite boom, shield to its own. The boom is the balun.`]);
+    out.push(["Choke",choke+" at the mast as insurance on long masts."]);
+  }else if(p.type==="quad"){
+    const q66=246/f*0.66, q82=246/f*0.82;
+    if(D.quadN===2) out.push(["75 Ω Q-section",`Solid RG-59/RG-11 (VF 0.66): <span class="num">${ftIn(q66)}</span>; foam 75 Ω (VF 0.82): <span class="num">${ftIn(q82)}</span>. Full detail on the Matching tab.`]);
+    out.push(["Frame",`Fiberglass spreaders <span class="num">${ftIn((1005/f)*0.0884)}</span> hub-to-corner, 4 per element. Run the wire through drilled end caps; leave a pigtail at the driven loop's bottom center for the feed.`]);
+    out.push(["Tuning order",`Driven loop to resonance first (trim the pigtail), then reflector spacing/stub for best F/B. Directors as cut.`]);
+    out.push(["Choke",choke+" at the feed point."]);
   }else{
     out.push(["1:1 current balun / choke",choke+" at the center insulator. This is the single highest-value dollar in a wire antenna."]);
     if(p.type==="fan") out.push(["Element spacing",`Hold element ends <span class="num">2–4 ft</span> apart with PVC or fiberglass spreaders; tune longest band first, shortest last.`]);
@@ -1397,7 +1710,7 @@ function buildRecipes(D,p,dIn){
 
 /* ---------- Wire sag & tension ---------- */
 function buildSag(D,p,gaugeKey,matKey){
-  const isWireAnt = ["dipole","invv","efhw","fan","loop"].includes(p.type);
+  const isWireAnt = ["dipole","invv","efhw","fan","loop","randwire"].includes(p.type);   // quad/LPDA are frame-supported
   const mech=WIREMECH[gaugeKey];
   if(!isWireAnt) return {rows:`<tr><td colspan="2">Self-supporting / frame antenna — catenary sag analysis not applicable. Check mast loading, boom deflection, and clamp torque instead.</td></tr>`, note:""};
   if(!mech) return {rows:`<tr><td colspan="2">Select a wire gauge (12–20 AWG) for sag analysis.</td></tr>`, note:""};
@@ -1427,8 +1740,11 @@ function buildSag(D,p,gaugeKey,matKey){
 function buildRF(D,p){
   const f=p.freq, P=p.power, duty=p.duty;
   const Pavg=P*duty*0.5;                       // 50% tx time
-  const gains={dipole:2.15,invv:1.9,efhw:2.15,fan:2.15,loop:3.1,gp:2.0,vert:2.0,yagi3:8.0,
-               jpole:2.15,slimjim:2.6,gp58:4.0,moxon:6.0};
+  const gains={dipole:2.15,invv:1.9,efhw:2.15,fan:2.15,loop:3.1,gp:2.0,vert:2.0,
+               jpole:2.15,slimjim:2.6,gp58:4.0,moxon:6.0,
+               quad:[7.1,8.8,9.8,10.5][(p.quadEls||2)-2],
+               lpda:6.5, randwire:1.8};
+  gains.yagi3=[8.0,9.2,10.2,11.0][(p.yagiEls||3)-3];
   const gdBi=gains[p.type]||2.15, G=Math.pow(10,gdBi/10);
   const mpeU = f<30 ? 180/(f*f) : f<300 ? 0.2 : f/1500;
   const mpeC = f<3 ? 100 : f<30 ? 900/(f*f) : f<300 ? 1.0 : f/300;
@@ -1539,6 +1855,212 @@ function svgMoxon(A,B,C,Dd){
   "</svg>";
 }
 
+function svgQuad(n,circs,spacings,boom){
+  const cy=138, x0=150, xSpan=620;
+  const totS=spacings.reduce((a,b)=>a+b,0)||1;
+  /* diamond half-heights scaled to largest loop */
+  const hMax=92, cMax=Math.max(...circs);
+  const xs=[x0]; spacings.forEach(s=>xs.push(xs[xs.length-1]+xSpan*(s/totS)));
+  let out=S_HEAD+sLine(x0-36,cy,xs[xs.length-1]+36,cy,4);
+  const names=["REF","DE"].concat(Array.from({length:n-2},(_,i)=>"D"+(i+1)));
+  circs.forEach((c,i)=>{
+    const h=hMax*(c/cMax), x=xs[i];
+    out+=`<path d="M ${x} ${cy-h} L ${x+h*0.55} ${cy} L ${x} ${cy+h} L ${x-h*0.55} ${cy} Z" fill="none" stroke="var(--text)" stroke-width="4"/>`;
+    out+=sTxt(x,cy-h-12,names[i]+" "+ftIn(c));
+    if(names[i]==="DE") out+=sFeed(x,cy+h)+sMut(x,cy+h+24,"feed ↓");
+  });
+  spacings.forEach((s,i)=>{
+    out+=sMut((xs[i]+xs[i+1])/2,cy+hMax+30,ftIn(s));
+  });
+  out+=sMut(x0+xSpan/2,cy+hMax+58,"boom "+ftIn(boom));
+  out+=`<path d="M ${xs[xs.length-1]+60} ${cy} l 50 0 m -12 -9 l 12 9 l -12 9" stroke="var(--good)" stroke-width="2.5" fill="none"/>`+
+       sMut(xs[xs.length-1]+85,cy-16,"fwd");
+  return out+"</svg>";
+}
+
+function svgLPDA(lens,gaps,boom,fL,fH){
+  const cy=150, x0=130, xSpan=650, N=lens.length;
+  const show=Math.min(N,8);
+  const idx=Array.from({length:show},(_,i)=>Math.round(i*(N-1)/(show-1)));
+  const totS=gaps.reduce((a,b)=>a+b,0)||1;
+  const pos=[0]; gaps.forEach(g=>pos.push(pos[pos.length-1]+g));
+  const hMax=100, lMax=lens[0];
+  let out=S_HEAD+sLine(x0-24,cy-7,x0+xSpan+24,cy-7,3)+sLine(x0-24,cy+7,x0+xSpan+24,cy+7,3);
+  idx.forEach((i,j)=>{
+    const x=x0+xSpan*(pos[i]/pos[N-1]);
+    const h=Math.max(26,hMax*(lens[i]/lMax));
+    out+=sLine(x,cy-h,x,cy+h,4);
+    if(j%2===0) out+=sTxt(x,cy-h-12,ftIn(lens[i]),"middle",16);
+    else out+=sTxt(x,cy+h+22,ftIn(lens[i]),"middle",16);
+  });
+  out+=sTxt(x0-40,cy-hMax-14,"rear · "+fL+" MHz","start",17)+
+       sTxt(x0+xSpan+52,cy-56,"front","start",17)+
+       sTxt(x0+xSpan+52,cy-32,fH+" MHz","start",16)+
+       sTxt(x0+xSpan+52,cy-10,"· feed","start",16)+
+       sMut(x0+xSpan/2,cy+hMax+52,"boom "+ftIn(boom)+" — feeder transposes between elements")+
+       `<path d="M ${x0+xSpan+50} ${cy+30} l 44 0 m -11 -8 l 11 8 l -11 8" stroke="var(--good)" stroke-width="2.5" fill="none"/>`+
+       sMut(x0+xSpan+72,cy+56,"fwd");
+  return out+"</svg>";
+}
+function svgRandWire(L,ratio,cp){
+  return S_HEAD+
+   `<rect x="120" y="95" width="70" height="52" rx="6" fill="none" stroke="var(--amber)" stroke-width="2.5"/>`+
+   sTxt(155,127,ratio+":1","middle",20)+
+   sLine(190,121,850,95,3.5)+sIns(855,93)+
+   sTxt(520,74,"wire "+ftIn(L),"middle")+
+   sLine(155,147,155,225,2,"var(--muted)")+sMut(155,250,"coax + choke ↓")+
+   sLine(120,121,52,180,2.5)+
+   sTxt(200,205,"counterpoise "+ftIn(cp),"start",18)+
+   sMut(700,180,"sloper / bent runs are fine — keep the first third straight","middle",15)+
+  "</svg>";
+}
+
+/* ---------- Matching-network build drawings ---------- */
+function svgHairpin(len,cap){
+  return '<svg class="schematic" viewBox="0 0 920 250" xmlns="http://www.w3.org/2000/svg" role="img">'+
+   sLine(240,70,240,180,4)+sLine(680,70,680,180,4)+
+   sTxt(460,44,"driven element (split & insulated at center)","middle",17)+
+   sLine(240,70,460,70,4)+sLine(460,70,680,70,4)+
+   sFeed(440,125)+sFeed(480,125)+
+   sLine(240,125,440,125,3,"var(--amber)")+sLine(480,125,680,125,3,"var(--amber)")+
+   sMut(460,152,"50 Ω feed across the split","middle",15)+
+   /* the hairpin U below */
+   sLine(400,168,400,215,3.5)+sLine(520,168,520,215,3.5)+sLine(400,215,520,215,3.5)+
+   sLine(400,168,440,133,2,"var(--muted)")+sLine(520,168,480,133,2,"var(--muted)")+
+   sTxt(560,196,"hairpin "+len,"start")+
+   sTxt(560,222,"2″ wide · ¼″ rod","start",16)+
+   sTxt(340,196,"Xₗ = 50 Ω","end",17)+
+   sMut(140,222,"shorten DE 1.5–2 %","middle",15)+
+  "</svg>";
+}
+function svgGamma(rod,sp,cap,vrate){
+  return '<svg class="schematic" viewBox="0 0 920 250" xmlns="http://www.w3.org/2000/svg" role="img">'+
+   sLine(140,80,820,80,5)+
+   sTxt(480,52,"driven element — continuous, grounded to boom (no split)","middle",16)+
+   /* gamma rod below, parallel */
+   sLine(480,138,760,138,3.5,"var(--amber)")+
+   sLine(760,138,760,84,3.5,"var(--amber)")+
+   sMut(766,116,"shorting strap — slides","start",15)+
+   sTxt(600,166,"rod "+rod,"middle")+
+   /* spacing dimension */
+   sLine(860,80,860,138,1.5,"var(--amber)")+
+   sLine(852,80,868,80,1.5,"var(--amber)")+sLine(852,138,868,138,1.5,"var(--amber)")+
+   sTxt(878,114,sp,"start",16)+
+   /* series cap + coax */
+   `<rect x="404" y="120" width="56" height="36" rx="5" fill="none" stroke="var(--amber)" stroke-width="2.5"/>`+
+   sTxt(432,144,cap,"middle",16)+
+   sLine(404,138,340,138,3,"var(--amber)")+
+   sFeed(340,138)+sLine(340,145,340,208,2,"var(--muted)")+
+   sMut(340,232,"coax center ↓ · shield to boom","middle",15)+
+   sTxt(432,196,"series cap ≥ "+vrate,"middle",16)+
+  "</svg>";
+}
+function svgQsec(l66,l82){
+  return '<svg class="schematic" viewBox="0 0 920 220" xmlns="http://www.w3.org/2000/svg" role="img">'+
+   sFeed(160,110)+sMut(160,84,"antenna ≈100 Ω","middle",15)+
+   sLine(167,110,753,110,6,"var(--amber)")+
+   sFeed(760,110)+sMut(760,84,"50 Ω coax →","middle",15)+
+   sTxt(460,66,"75 Ω quarter-wave Q-section","middle")+
+   sDim(167,753,150,"solid (VF 0.66): "+l66)+
+   sTxt(460,196,"foam (VF 0.82): "+l82,"middle",17)+
+  "</svg>";
+}
+function svgLPDAFeed(sTwin){
+  return '<svg class="schematic" viewBox="0 0 920 240" xmlns="http://www.w3.org/2000/svg" role="img">'+
+   sLine(140,95,800,95,7)+sLine(140,145,800,145,7)+
+   sTxt(470,60,"twin booms = the feeder (elements alternate top/bottom boom)","middle",16)+
+   sLine(860,95,860,145,1.5,"var(--amber)")+
+   sLine(852,95,868,95,1.5,"var(--amber)")+sLine(852,145,868,145,1.5,"var(--amber)")+
+   sTxt(878,124,sTwin,"start",16)+
+   sLine(180,95,180,145,2,"var(--muted)","5 4")+sMut(180,176,"coax runs INSIDE this boom","middle",15)+
+   sFeed(800,120)+sMut(800,190,"center + shield exit at the FRONT — the boom itself is the balun (infinite balun)","middle",15)+
+  "</svg>";
+}
+
+/* ---------- Matching Network tab ---------- */
+function buildMatchingTab(D,p,fl,flen){
+  const f=p.freq, lam=983.571/f;
+  const isYagi=p.type==="yagi3", isQuad=p.type==="quad", isLpda=p.type==="lpda";
+  if(!isYagi&&!isQuad&&!isLpda){ $("tabMatching").style.display="none";
+    if(curTab==="matching") showTab("build"); return; }
+  $("tabMatching").style.display="";
+  let rows="", note="";
+  if(isYagi){
+    const XL=50, Lh=XL/(2*Math.PI*f), hpZ=332, hpLen=lam*Math.atan(XL/hpZ)/(2*Math.PI);
+    const gRod=lam*0.04, gSp=lam*0.007, gC=2000/f;
+    rows=`
+     <tr><th colspan="2" style="color:var(--amber)">Hairpin (beta) match — the clean solution</th></tr>
+     <tr><th>Driven element shortening</th><td class="num">1.5–2 % (creates −25 Ω capacitive reactance)</td></tr>
+     <tr><th>Hairpin inductance</th><td class="num">${Lh.toFixed(2)} µH  (Xₗ = 50 Ω)</td></tr>
+     <tr><th>Hairpin as shorted loop</th><td class="num">${ftIn(hpLen)} long × 2″ wide, ¼″ rod (Z₀ ≈ 330 Ω)</td></tr>
+     <tr><th>Coil alternative</th><td class="num">≈ ${Math.ceil(9.9*Math.sqrt(Lh))} turns #12 on 1″ form, 2″ long</td></tr>
+     <tr><th colspan="2" style="color:var(--amber);padding-top:14px">Gamma match — no element break needed</th></tr>
+     <tr><th>Gamma rod length</th><td class="num">${ftIn(gRod)}  (0.04 λ)</td></tr>
+     <tr><th>Rod-to-element spacing</th><td class="num">${ftIn(gSp)}  (0.007 λ)</td></tr>
+     <tr><th>Series capacitor (start)</th><td class="num">${gC.toFixed(0)} pF  (air-variable or coax-sleeve)</td></tr>
+     <tr><th>Tuning</th><td>Slide the shorting strap and cap together for 1:1 — rod handles the step-up, cap cancels its inductance</td></tr>`;
+    note="The hairpin is symmetric (keeps the pattern clean) but needs a split, insulated driven element. The gamma feeds a grounded, plumber's-delight element — simpler mechanically, slightly lopsided electrically. Both are legitimate; the hairpin measures cleaner on a range.";
+  }else{
+    const q66=246/f*0.66, q82=246/f*0.82, n=D.quadN;
+    const gRod=lam*0.045, gSp=lam*0.007, gC=2000/f;
+    rows = (n===2?`
+     <tr><th colspan="2" style="color:var(--amber)">75 Ω quarter-wave Q-section — the classic 2-element quad match</th></tr>
+     <tr><th>What it does</th><td>¼-wave of 75 Ω transforms the ≈100 Ω loop to ≈56 Ω — better than 1.2:1</td></tr>
+     <tr><th>RG-59 / RG-11 (solid, VF 0.66)</th><td class="num">${ftIn(q66)}</td></tr>
+     <tr><th>Foam 75 Ω (VF 0.82)</th><td class="num">${ftIn(q82)}</td></tr>
+     <tr><th>Placement</th><td>Splice between the driven-loop feed point and your 50 Ω run; choke at the junction</td></tr>`:`
+     <tr><th colspan="2" style="color:var(--amber)">Direct feed — ${n} elements pull the loop to ≈${D.feedR} Ω</th></tr>
+     <tr><th>Matching needed</th><td>None beyond a 1:1 current choke — parasitic loading did the matching for you</td></tr>`)+`
+     <tr><th colspan="2" style="color:var(--amber);padding-top:14px">Gamma match — alternative for a grounded driven loop</th></tr>
+     <tr><th>Gamma rod length</th><td class="num">${ftIn(gRod)}  (0.045 λ along the bottom wire)</td></tr>
+     <tr><th>Rod-to-wire spacing</th><td class="num">${ftIn(gSp)}</td></tr>
+     <tr><th>Series capacitor (start)</th><td class="num">${gC.toFixed(0)} pF</td></tr>`;
+    note = n===2 ? "The Q-section is the quad's oldest friend — cheap, invisible, and it soaks up the 100 Ω feed point exactly. Weatherproof the splice." :
+      "With "+n+" elements the driven loop lands near 50 Ω on its own. Verify with an analyzer; if it sits high, squeeze the reflector spacing 5% before adding hardware.";
+  }
+  if(isLpda){
+    rows=`
+     <tr><th colspan="2" style="color:var(--amber)">Twin-boom transposed feeder — the LPDA's own transmission line</th></tr>
+     <tr><th>Feeder Z₀ target</th><td class="num">≈ 100–120 Ω</td></tr>
+     <tr><th>Boom spacing (center-to-center)</th><td class="num">≈ 1.4 × boom diameter  (Z₀ = 120·cosh⁻¹(S/D))</td></tr>
+     <tr><th>Element connection</th><td>Alternate: element 1 top boom / element 2 bottom boom / … — the transposition</td></tr>
+     <tr><th>The infinite balun</th><td>Run the coax INSIDE one boom from rear to front; center to the far boom, shield to its own boom at the apex. Zero extra parts, perfect balance.</td></tr>
+     <tr><th>Wire-LPDA alternative</th><td class="num">300 Ω ladder feeder + 4:1 current balun at the rear</td></tr>`;
+    note="The transposed feeder is the antenna's heart — Z₀ inside 100–130 Ω keeps the active region behaving across the whole sweep. The boom-as-balun trick is why commercial LPDAs look so clean.";
+  }
+  $("mnBuild").innerHTML=rows;
+  $("mnNote").textContent=note;
+
+  /* build drawings with measurements */
+  const vCap=Math.sqrt(2*p.power*50)*1.6;                       // PEP-driven voltage margin
+  const vRate=vCap<250?"500 V":vCap<600?"1 kV":"1.5–3 kV / vacuum";
+  if(isYagi){
+    const XL=50, hpZ=332, hpLen=lam*Math.atan(XL/hpZ)/(2*Math.PI);
+    $("mnImg").innerHTML=svgHairpin(ftIn(hpLen))+svgGamma(ftIn(lam*0.04),ftIn(lam*0.007),(2000/f).toFixed(0)+" pF",vRate);
+  }else if(isQuad){
+    $("mnImg").innerHTML=(D.quadN===2?svgQsec(ftIn(246/f*0.66),ftIn(246/f*0.82)):"")+
+      svgGamma(ftIn(lam*0.045),ftIn(lam*0.007),(2000/f).toFixed(0)+" pF",vRate);
+  }else if(p.type==="lpda"){
+    $("mnImg").innerHTML=svgLPDAFeed("≈1.4 × boom Ø");
+  }
+
+  /* --- direct 50 Ω feed simulation --- */
+  const R = D.feedR || 22;
+  const S = R>=50 ? R/50 : 50/R;
+  const G=(S-1)/(S+1), refl=100*G*G;
+  const matched=(fl.k1*Math.sqrt(f)+fl.k2*f)*flen/100;
+  const tot=totalLossAtSWR(matched,S), extra=tot-matched;
+  const bwShrink = Math.round(100*(1-1/Math.sqrt(S)));
+  $("mnDirect").innerHTML=`
+   <tr><th>Feed-point R at resonance</th><td class="num">≈ ${R} Ω (model)</td></tr>
+   <tr><th>SWR on 50 Ω coax</th><td class="num">${S.toFixed(2)} : 1</td></tr>
+   <tr><th>Power reflected at the antenna</th><td class="num">${refl.toFixed(1)} %  (recirculates — not all lost)</td></tr>
+   <tr><th>Line loss, your ${flen} ft of ${fl.name.split(" (")[0]}</th><td class="num">${matched.toFixed(2)} dB matched → ${tot.toFixed(2)} dB at ${S.toFixed(1)}:1  (+${extra.toFixed(2)} dB)</td></tr>
+   <tr><th>Usable 2:1 bandwidth</th><td class="num">shrinks ≈ ${bwShrink} % vs a matched feed</td></tr>
+   <tr><th>Verdict</th><td>${S<=1.6?'<span class="verdict-ok">Direct feed is fine — a choke and go.</span>':S<=2.4?'<span style="color:var(--amber)">Workable: most rigs start folding back power near 2:1; a tuner masks it at the shack but the '+extra.toFixed(2)+' dB stays on the line. The matching network above earns its keep in bandwidth and full power.</span>':'<span class="verdict-warn">Not recommended — build the match.</span>'}</td></tr>`;
+  $("mnDirectNote").textContent="Simulation basis: resonant feed-point R vs 50 Ω (reactance tuned out), ARRL total-loss formula for the SWR-added line loss, and 1/√SWR bandwidth scaling. Reflected power isn't destroyed — it re-reflects at the rig — but the extra line loss and transceiver foldback are real.";
+}
+
 /* ---------- Advisor ---------- */
 function buildAdvisor(D,p,toa,optH){
   const out=[];
@@ -1589,7 +2111,10 @@ function buildAdvisor(D,p,toa,optH){
     jpole:"as high as the mast allows, choked below the bridge, isolated from a conductive mast, in the clear",
     slimjim:"hung vertically and freely (roll-up) or masted high, choke below the match — its lower-angle edge shows above rooftop height",
     gp58:"base above nearby rooftops with flat radials and a carefully tuned base coil — that's when the 3 dB shows up",
-    moxon:"on a light rotator a half-wave up, C-gap braced rigid, pointed at the horizon you care about"
+    moxon:"on a light rotator a half-wave up, C-gap braced rigid, pointed at the horizon you care about",
+    quad:"half-wave up on a rotator, spreaders guyed against ice, driven loop tuned for resonance and reflector for F/B — the quietest DX antenna you'll ever own",
+    lpda:"on a rotator with the rear element a half-wave up at your lowest band — one feed line, one antenna, the whole spectrum",
+    randwire:"as long and high and straight as the lot allows, unun at a convenient feed corner, counterpoise on the ground, choke on the coax"
   };
   out.push(`<p><b>The textbook install</b> (even if you can't get there today): ${ideal[p.type]}. Anything short of this still works — it just moves dB from DX angles to local ones.</p>`);
 
@@ -1696,6 +2221,322 @@ function surprise(){
   omQuip();
 }
 
+/* ---------- Balun / Unun engine (duty-derated) ---------- */
+const XFMRS=[
+ {name:"1:1 current choke (Guanella)", loss:0.01, wind:"8–12 turns of coax or bifilar pair on #31", use:"Every balanced feed point; the anti-RFI workhorse"},
+ {name:"4:1 Guanella current balun",   loss:0.03, wind:"Two 1:1 chokes (100 Ω pairs) in series-parallel on #43/#52", use:"Ladder line → tuner, folded dipoles, wire LPDA"},
+ {name:"9:1 unun",                     loss:0.06, wind:"9 trifilar turns on #43, windings in series (3² = 9)", use:"Random wire + tuner"},
+ {name:"49:1 unun",                    loss:0.10, wind:"2 primary : 14 secondary, crossover style on #43/#52 (+100 pF comp.)", use:"Resonant EFHW"},
+ {name:"64:1 unun",                    loss:0.12, wind:"2 : 16 turns on #43/#52", use:"High-Z EFHW — thin wire, high & clear"}
+];
+function xfmrHeat(P,duty,loss){ return P*duty*0.5*loss; }
+function xfmrVerdict(heat){
+  const n240=Math.max(1,Math.ceil(heat/16)), n140=Math.max(1,Math.ceil(heat/8));
+  if(n240===1&&heat<=8) return {t:'<span class="verdict-ok">FT-140 or FT-240, single core — loafing</span>',n240};
+  if(n240===1) return {t:'<span class="verdict-ok">single FT-240 OK</span> · FT-140 needs '+n140,n240};
+  if(n240<=3) return {t:'<span style="color:var(--amber)">stack '+n240+' × FT-240-43 — or fewer cores in low-loss mix #52</span>',n240};
+  return {t:'<span class="verdict-warn">stack '+n240+' × FT-240-52 + airflow — or lower duty/power</span>',n240};
+}
+function buildBalunsTab(P,duty,modeName){
+  $("balTable").innerHTML="";
+  $("balTable").outerHTML='<div id="balTable"></div>';
+  document.getElementById("balTable").innerHTML=XFMRS.map(x=>{
+    const heat=xfmrHeat(P,duty,x.loss);
+    const v=xfmrVerdict(heat);
+    return `<div class="balblock">
+      <div class="balhead"><b>${x.name}</b><span>${x.use}</span></div>
+      <div class="balrow"><span class="ballbl">Winding</span>${x.wind}</div>
+      <div class="balrow"><span class="ballbl">At your ${P} W ${modeName}</span>loss ${(x.loss*100).toFixed(0)} % → <b class="num">${heat.toFixed(1)} W</b> of core heat &nbsp;·&nbsp; ${v.t}</div>
+    </div>`;
+  }).join("");
+  $("balNote").textContent="Heat column = PEP × duty × 50 % transmit time × transformer loss. Change TX power or mode (expert panel) and every verdict recomputes. Same-size stacked cores share flux — capability scales with the stack.";
+  $("balImg").innerHTML=svgBalChoke()+svgBal41()+svgBal91()+svgBal491();
+}
+/* --- shared toroid drawing helpers: face-on ring, spokes = wire passes through the bore --- */
+function _pol(cx,cy,r,deg){const a=(deg-90)*Math.PI/180;return [cx+r*Math.cos(a),cy+r*Math.sin(a)];}
+function _ePt(cx,cy,rx,ry,deg){const a=(deg-90)*Math.PI/180;return [cx+rx*Math.sin(a),cy-ry*Math.cos(a)];}
+
+/* Realistic 3D-look toroid core, viewed at a 3/4 angle so the hole reads clearly */
+function _toroid(cx,cy,rx,ry){
+  const rxi=rx*0.50, ryi=ry*0.42;
+  return `<path d="M ${(cx-rx).toFixed(1)} ${cy} A ${rx} ${ry} 0 1 0 ${(cx+rx).toFixed(1)} ${cy} A ${rx} ${ry} 0 1 0 ${(cx-rx).toFixed(1)} ${cy} Z `+
+         `M ${(cx-rxi).toFixed(1)} ${cy} A ${rxi} ${ryi} 0 1 0 ${(cx+rxi).toFixed(1)} ${cy} A ${rxi} ${ryi} 0 1 0 ${(cx-rxi).toFixed(1)} ${cy} Z" `+
+         `fill="var(--core)" fill-rule="evenodd" stroke="var(--line)" stroke-width="1.5"/>`+
+         `<path d="M ${(cx-rx*0.56).toFixed(1)} ${(cy-ry*0.68).toFixed(1)} A ${(rx*0.62).toFixed(1)} ${(ry*0.5).toFixed(1)} 0 0 1 ${(cx+rx*0.56).toFixed(1)} ${(cy-ry*0.68).toFixed(1)}" `+
+         `fill="none" stroke="var(--core-shine)" stroke-width="${Math.max(7,ry*0.30).toFixed(1)}" stroke-linecap="round"/>`+
+         `<ellipse cx="${cx}" cy="${cy}" rx="${rxi.toFixed(1)}" ry="${ryi.toFixed(1)}" fill="none" stroke="var(--line)" stroke-width="1.5"/>`;
+}
+/* One physical turn: wire dips from the outer rim to the inner rim at a given angle.
+   off = perpendicular offset for multi-filar (bifilar/trifilar) strands sharing the same pass. */
+function _turn(cx,cy,rx,ry,rxi,ryi,deg,color,w,off){
+  const o=off||0, a=(deg-90)*Math.PI/180, tx=Math.cos(a)*o, ty=Math.sin(a)*o;
+  const [x1,y1]=_ePt(cx,cy,rx*0.97,ry*0.97,deg), [x2,y2]=_ePt(cx,cy,rxi*1.06,ryi*1.06,deg);
+  const mx=(x1+x2)/2+tx*0.6, my=(y1+y2)/2+ty*0.6;
+  return `<path d="M ${(x1+tx).toFixed(1)} ${(y1+ty).toFixed(1)} Q ${mx.toFixed(1)} ${my.toFixed(1)} ${(x2+tx).toFixed(1)} ${(y2+ty).toFixed(1)}" `+
+         `fill="none" stroke="${color}" stroke-width="${w}" stroke-linecap="round"/>`;
+}
+function _turnLabel(cx,cy,rx,ry,deg,n){
+  const [x,y]=_ePt(cx,cy,rx+26,ry+20,deg);
+  return sMut(x,y,n,"middle",13);
+}
+/* Compact spec panel: LABEL (bold) : description (muted), all width-checked to never clip. */
+function _specPanel(rows,y0){
+  let out="", y=y0;
+  rows.forEach(([lab,val])=>{
+    out+=sTxt(40,y,lab,"start",15)+sMut(40+lab.length*9.4+18,y,val,"start",15);
+    y+=30;
+  });
+  return out;
+}
+function _wireLead(x1,y1,x2,y2,color,label,side){
+  /* drop straight down clear of the core, THEN run sideways to the label — no diagonal crossing the face */
+  const yMid=y2-14;
+  return sLine(x1,y1,x1,yMid,4.5,color)+sLine(x1,yMid,x2,y2,4.5,color)+
+         `<circle cx="${x2}" cy="${y2}" r="5" fill="${color}"/>`+
+         sMut(x2+(side==="end"?14:-14),y2+5,label,side==="end"?"start":"end",14);
+}
+
+function svgBalChoke(){
+  const cx=460,cy=180,rx=175,ry=88,rxi=87.5,ryi=37;
+  const N=12, arcStart=-148, arcEnd=148, step=(arcEnd-arcStart)/(N-1);
+  let s='<svg class="schematic" viewBox="0 0 920 340" xmlns="http://www.w3.org/2000/svg" role="img">'+
+    sTxt(40,36,"1:1 CURRENT CHOKE — W1JR winding on a toroid core","start",19)+
+    _toroid(cx,cy,rx,ry);
+  for(let i=0;i<N;i++){
+    const deg=arcStart+i*step;
+    if(i===6) continue;   // gap where the crossover jumps
+    s+=_turn(cx,cy,rx,ry,rxi,ryi,deg,"var(--wireA)",5.5);
+  }
+  s+=_turnLabel(cx,cy,rx,ry,arcStart,"1")+_turnLabel(cx,cy,rx,ry,arcStart+5*step,"6")+
+     _turnLabel(cx,cy,rx,ry,arcStart+7*step,"7")+_turnLabel(cx,cy,rx,ry,arcEnd,"12");
+  /* W1JR crossover: wire jumps across the hole from turn 6 to turn 7, on the far side */
+  const [ja,jb]=[_ePt(cx,cy,rxi*0.55,ryi*0.55,arcStart+5*step-6),_ePt(cx,cy,rxi*0.55,ryi*0.55,arcStart+7*step+6)];
+  s+=`<path d="M ${ja[0].toFixed(1)} ${ja[1].toFixed(1)} Q ${cx} ${(cy-6)} ${jb[0].toFixed(1)} ${jb[1].toFixed(1)}" fill="none" stroke="var(--wireA)" stroke-width="4" stroke-dasharray="6 5"/>`+
+     sMut(cx,cy-2,"crossover","middle",13)+sMut(cx,cy+16,"turn 6→7","middle",12);
+  /* leads exit the front gap, straight down, clear of the core */
+  const [l1x,l1y]=_ePt(cx,cy,rx*0.97,ry*0.97,arcStart), [l2x,l2y]=_ePt(cx,cy,rx*0.97,ry*0.97,arcEnd);
+  s+=_wireLead(l1x,l1y,cx-90,300,"var(--wireA)","coax from rig","start")+
+     _wireLead(l2x,l2y,cx+230,300,"var(--wireA)","coax to antenna","end");
+  s+="</svg>";
+  s+='<svg class="schematic" viewBox="0 0 920 190" xmlns="http://www.w3.org/2000/svg" role="img">'+
+    _specPanel([
+      ["CORE","FT-240-31 toroid — one core is plenty (loss ≈ 1 %)"],
+      ["WIND","12 turns of RG-8X/RG-58 through the center hole"],
+      ["COUNT","one full pass through the hole = one turn"],
+      ["CROSSOVER","jump the coax across the hole after turn 6 — keeps the ends"],
+      ["","apart so input-to-output capacitance stays low (the W1JR trick)"],
+      ["USE","every balanced feed point — kills feed-line radiation & shack RFI"]
+    ],36)+"</svg>";
+  return s;
+}
+
+function svgBal41(){
+  const cy=175, r1x=260, r2x=660, rx=118, ry=66, rxi=59, ryi=27.7;
+  const N=9, arcStart=-150,arcEnd=150, step=(arcEnd-arcStart)/(N-1);
+  let s='<svg class="schematic" viewBox="0 0 920 320" xmlns="http://www.w3.org/2000/svg" role="img">'+
+    sTxt(40,34,"4:1 GUANELLA CURRENT BALUN — two identical 1:1 chokes","start",19)+
+    _toroid(r1x,cy,rx,ry)+_toroid(r2x,cy,rx,ry);
+  [r1x,r2x].forEach(cx=>{
+    for(let i=0;i<N;i++){
+      const deg=arcStart+i*step;
+      s+=_turn(cx,cy,rx,ry,rxi,ryi,deg,"var(--wireA)",3.4,-4)+_turn(cx,cy,rx,ry,rxi,ryi,deg,"var(--wireB)",3.4,4);
+    }
+  });
+  s+=sMut(r1x,cy+ry+34,"choke A — 9 bifilar turns","middle",15)+
+     sMut(r2x,cy+ry+34,"choke B — 9 bifilar turns","middle",15)+
+     sMut(r1x,cy+ry+56,"#14 enameled pair, twisted ≈3/inch","middle",13)+
+     sMut(r2x,cy+ry+56,"FT-240-43 (or -52) · 100 Ω pair","middle",13);
+  s+="</svg>";
+  /* connections: parallel at the 50 Ω side, series at the 200 Ω side */
+  const bx=90,by=60,bw=210,bh=30,gap=54;
+  const rows=[["A","var(--wireA)"],["A′","var(--wireA)"],["B","var(--wireB)"],["B′","var(--wireB)"]];
+  let c='<svg class="schematic" viewBox="0 0 920 300" xmlns="http://www.w3.org/2000/svg" role="img">'+
+    sTxt(40,30,"CONNECTIONS — parallel in, series out","start",18);
+  rows.forEach(([lab,col],i)=>{
+    const y=by+i*gap;
+    c+=`<rect x="${bx}" y="${y}" width="${bw}" height="${bh}" rx="5" fill="none" stroke="${col}" stroke-width="2.5"/>`+
+       sMut(bx+bw/2,y+bh/2+5,lab,"middle",15);
+  });
+  /* 50 ohm side: A and A' paralleled, B and B' paralleled, then A-bus + B-bus become the coax pair */
+  const xL=bx-40;
+  c+=sLine(bx,by+bh/2,xL,by+bh/2,3,"var(--wireA)")+sLine(bx,by+gap+bh/2,xL,by+gap+bh/2,3,"var(--wireA)")+
+     sLine(xL,by+bh/2,xL,by+gap+bh/2,3,"var(--wireA)")+
+     sLine(bx,by+2*gap+bh/2,xL+18,by+2*gap+bh/2,3,"var(--wireB)")+sLine(bx,by+3*gap+bh/2,xL+18,by+3*gap+bh/2,3,"var(--wireB)")+
+     sLine(xL+18,by+2*gap+bh/2,xL+18,by+3*gap+bh/2,3,"var(--wireB)")+
+     sLine(xL,(by+by+gap)/2+bh/2,10,(by+by+gap)/2+bh/2,3,"var(--wireA)")+
+     sLine(xL+18,(by+2*gap+by+3*gap)/2+bh/2,10,(by+2*gap+by+3*gap)/2+bh/2,3,"var(--wireB)")+
+     sLine(10,(by+by+gap)/2+bh/2,10,(by+2*gap+by+3*gap)/2+bh/2,3,"var(--text)")+
+     sMut(14,by+bh/2,"50 Ω","start",16)+sMut(14,by+bh/2+18,"coax","start",13);
+  /* 200 ohm side: A' -> B in series (jumper), A and B' become the balanced output */
+  const xR=bx+bw+40;
+  c+=sLine(bx+bw,by+bh/2,xR+140,by+bh/2,3,"var(--wireA)")+
+     sLine(bx+bw,by+gap+bh/2,xR,by+gap+bh/2,3,"var(--wireA)")+
+     sLine(bx+bw,by+2*gap+bh/2,xR,by+2*gap+bh/2,3,"var(--wireB)")+
+     sLine(xR,by+gap+bh/2,xR,by+2*gap+bh/2,3,"var(--text)")+
+     sLine(bx+bw,by+3*gap+bh/2,xR+140,by+3*gap+bh/2,3,"var(--wireB)")+
+     sMut(xR+150,by+bh/2+5,"200 Ω balanced","start",15)+
+     sMut(xR+150,by+3*gap+bh/2+5,"(to ladder line)","start",13);
+  c+=sMut(40,270,"Windings paralleled on the 50 Ω side, put in series on the 200 Ω side —","start",15)+
+     sMut(40,292,"forcing equal currents in both halves is what makes this a CURRENT balun.","start",15);
+  c+="</svg>";
+  return s+c;
+}
+
+function svgBal91(){
+  const cx=460,cy=170,rx=175,ry=85,rxi=87.5,ryi=36;
+  const N=9, arcStart=-150,arcEnd=150, step=(arcEnd-arcStart)/(N-1);
+  let s='<svg class="schematic" viewBox="0 0 920 330" xmlns="http://www.w3.org/2000/svg" role="img">'+
+    sTxt(40,34,"9:1 UNUN — trifilar (3-wire) winding, connected in series","start",19)+
+    _toroid(cx,cy,rx,ry);
+  for(let i=0;i<N;i++){
+    const deg=arcStart+i*step;
+    s+=_turn(cx,cy,rx,ry,rxi,ryi,deg,"var(--wireA)",3.2,-6)+
+       _turn(cx,cy,rx,ry,rxi,ryi,deg,"var(--text)",3.2,0)+
+       _turn(cx,cy,rx,ry,rxi,ryi,deg,"var(--wireB)",3.2,6);
+  }
+  s+=_turnLabel(cx,cy,rx,ry,arcStart,"1")+_turnLabel(cx,cy,rx,ry,arcEnd,"9")+
+     sMut(cx,cy+ry+36,"9 turns of a 3-wire ribbon, wound together (w1 · w2 · w3)","middle",15)+
+     sMut(cx,cy+ry+58,"FT-140-43 (QRP–100 W) or FT-240-43 for higher power","middle",14);
+  s+="</svg>";
+  const bx=210,by=64,bw=420,bh=34,gap=64;
+  let c='<svg class="schematic" viewBox="0 0 920 280" xmlns="http://www.w3.org/2000/svg" role="img">'+
+    sTxt(40,32,"SERIES CONNECTION — w1 end joins w2 start, w2 end joins w3 start (3² = 9)","start",17);
+  const wires=[["w1","var(--wireA)"],["w2","var(--text)"],["w3","var(--wireB)"]];
+  wires.forEach(([lab,col],i)=>{
+    const y=by+i*gap;
+    c+=`<rect x="${bx}" y="${y}" width="${bw}" height="${bh}" rx="6" fill="none" stroke="${col}" stroke-width="2.8"/>`+
+       sTxt(bx+14,y+bh/2+5,lab,"start",16);
+  });
+  /* jumpers: right end of w1 -> right end drops to left end area of w2 (typical series chain drawn as a zigzag bus) */
+  c+=sLine(bx+bw,by+bh/2,bx+bw+30,by+bh/2,3,"var(--muted)")+
+     sLine(bx+bw+30,by+bh/2,bx+bw+30,by+gap+bh/2,3,"var(--muted)")+
+     sLine(bx+bw+30,by+gap+bh/2,bx+bw,by+gap+bh/2,3,"var(--muted)")+
+     sLine(bx,by+gap+bh/2,bx-30,by+gap+bh/2,3,"var(--muted)")+
+     sLine(bx-30,by+gap+bh/2,bx-30,by+2*gap+bh/2,3,"var(--muted)")+
+     sLine(bx-30,by+2*gap+bh/2,bx,by+2*gap+bh/2,3,"var(--muted)");
+  /* coax across w1 only; antenna across all three (left of w1 to right of w3) */
+  c+=sLine(bx,by+bh/2,bx-60,by+bh/2,3,"var(--wireA)")+sMut(bx-70,by+bh/2-12,"coax center →","end",14)+
+     sMut(bx-70,by+bh/2+22,"(shield end)","end",13)+
+     sMut(bx+bw+40,by+2*gap+bh/2+5,"→ antenna wire","start",15)+
+     sLine(bx+bw,by+2*gap+bh/2,bx+bw+34,by+2*gap+bh/2,3,"var(--wireB)");
+  c+=sMut(40,240,"Coax lands across w1 only (shield to the ground end); the antenna wire connects","start",15)+
+     sMut(40,262,"across all three windings in series. ≈450 Ω end-fed wire ÷ 9 ≈ 50 Ω — a tuner handles the rest.","start",15);
+  c+="</svg>";
+  return s+c;
+}
+
+function svgBal491(){
+  const cx=460,cy=170,rx=175,ry=85,rxi=87.5,ryi=36;
+  const N=14, arcStart=-150,arcEnd=150, step=(arcEnd-arcStart)/(N-1);
+  let s='<svg class="schematic" viewBox="0 0 920 330" xmlns="http://www.w3.org/2000/svg" role="img">'+
+    sTxt(40,34,"49:1 EFHW UNUN — tapped autotransformer, 14 turns","start",19)+
+    _toroid(cx,cy,rx,ry);
+  for(let i=0;i<N;i++){
+    const deg=arcStart+i*step;
+    if(i<2) s+=_turn(cx,cy,rx,ry,rxi,ryi,deg,"var(--wireB)",3.2,-4)+_turn(cx,cy,rx,ry,rxi,ryi,deg,"var(--wireA)",3.2,4);
+    else s+=_turn(cx,cy,rx,ry,rxi,ryi,deg,"var(--wireB)",4.5);
+  }
+  s+=_turnLabel(cx,cy,rx,ry,arcStart,"1")+_turnLabel(cx,cy,rx,ry,arcStart+step,"2  ★tap")+
+     _turnLabel(cx,cy,rx,ry,arcEnd,"14")+
+     sMut(cx,cy+ry+36,"turns 1–2: secondary + primary twisted together (the tap)","middle",15)+
+     sMut(cx,cy+ry+58,"turns 3–14: secondary alone · FT-240-43 (use -52 above 400 W)","middle",14);
+  s+="</svg>";
+  const bx=440,topY=90,botY=320,barW=34;
+  let c='<svg class="schematic" viewBox="0 0 920 420" xmlns="http://www.w3.org/2000/svg" role="img">'+
+    sTxt(40,32,"AUTOTRANSFORMER — turn ratio squared does the work: 14² ÷ 2² = 49","start",17)+
+    `<rect x="${bx-barW/2}" y="${topY}" width="${barW}" height="${botY-topY}" rx="8" fill="none" stroke="var(--wireB)" stroke-width="3"/>`;
+  for(let i=1;i<7;i++) c+=sLine(bx-barW/2,topY+i*(botY-topY)/7,bx+barW/2,topY+i*(botY-topY)/7,1.5,"var(--wireB)");
+  const tapY=botY-(botY-topY)/7;    // turn 2 sits one-seventh UP from turn 0 (the shield end) — physically close, so labels are staggered apart
+  c+=sLine(bx,topY,bx,topY-30,3,"var(--wireB)")+sMut(bx+26,topY-22,"→ antenna wire (turn 14)","start",15)+
+     sLine(bx-barW/2,tapY,bx-140,tapY,3,"var(--wireA)")+`<circle cx="${bx-barW/2}" cy="${tapY}" r="5" fill="var(--wireA)"/>`+
+     sMut(bx-150,tapY-28,"tap · turn 2","end",15)+sMut(bx-150,tapY-8,"coax center","end",14)+
+     sLine(bx-barW/2,botY,bx-140,botY,3,"var(--muted)")+`<circle cx="${bx-barW/2}" cy="${botY}" r="5" fill="var(--muted)"/>`+
+     sMut(bx-150,botY+24,"turn 0 · shield","end",15)+sMut(bx-150,botY+44,"+ counterpoise","end",14);
+  /* compensation cap spans ONLY the primary section: tap (turn 2) down to turn 0 — drawn to the right, clear of both label stacks */
+  const capX=bx+110;
+  c+=sLine(bx+barW/2,tapY,capX,tapY,3,"var(--wireA)")+sLine(capX,tapY,capX,tapY+22,3,"var(--wireA)")+
+     sLine(capX-16,tapY+22,capX+16,tapY+22,3,"var(--wireA)")+sLine(capX-16,tapY+34,capX+16,tapY+34,3,"var(--wireA)")+
+     sLine(capX,tapY+34,capX,botY,3,"var(--muted)")+sLine(capX,botY,bx+barW/2,botY,3,"var(--muted)")+
+     sMut(capX+26,tapY+14,"100 pF ≥ 3 kV","start",15)+sMut(capX+26,tapY+34,"flattens 15–10 m","start",13);
+  c+=sMut(40,398,"64:1 variant: identical build, wind 16 turns instead of 14 — the tap stays at turn 2.","start",15);
+  c+="</svg>";
+  return s+c;
+}
+
+/* ---------- Homebrew ladder line engine ---------- */
+function ladderZ0(spacingIn,dIn){ return 276*Math.log10(2*spacingIn/dIn); }
+function buildLadderTab(freq,gaugeKey,matKey,flen){
+  const g=GAUGES[gaugeKey]; const d=g?g.d:0.0641;
+  const insul=matKey==="insulated_copper";
+  const z4=ladderZ0(4,d)*(insul?0.93:1);
+  const vf=insul?0.95:0.97;
+  const lossPer100=0.015*Math.sqrt(freq);
+  $("llCalc").innerHTML=`
+   <tr><th>Your wire</th><td class="num">${g?g.name:"14 AWG"}${insul?" (insulated: Z₀ −7 %, VF 0.95)":" (bare: VF 0.97)"}</td></tr>
+   <tr><th>Z₀ at 4″ spacing</th><td class="num">${z4.toFixed(0)} Ω   (276·log₁₀(2D/d))</td></tr>
+   <tr><th>Velocity factor</th><td class="num">≈ ${vf.toFixed(2)}  (mostly air — that's the whole point)</td></tr>
+   <tr><th>Matched loss @ ${freq.toFixed(1)} MHz</th><td class="num">≈ ${lossPer100.toFixed(3)} dB / 100 ft — about a tenth of good coax</td></tr>
+   <tr><th>Loss on ${flen} ft</th><td class="num">${(lossPer100*flen/100).toFixed(3)} dB matched — and barely worse even at 10:1 SWR</td></tr>`;
+  $("llNote").textContent="This is why doublet owners smile: open-wire line makes the 'lengths to avoid' below the ONLY thing you have to get right.";
+  $("llImg").innerHTML='<svg class="schematic" viewBox="0 0 920 250" xmlns="http://www.w3.org/2000/svg" role="img">'+
+   sLine(80,75,840,75,4)+sLine(80,180,840,180,4)+
+   [220,460,700].map(x=>`<rect x="${x-9}" y="82" width="18" height="92" rx="8" fill="none" stroke="var(--amber)" stroke-width="3.5"/>`+
+     `<path d="M ${x-16} 75 q 16 -14 32 0 M ${x-16} 180 q 16 14 32 0" fill="none" stroke="var(--good)" stroke-width="2.5"/>`).join("")+
+   sLine(880,75,880,180,1.5,"var(--amber)")+
+   sLine(872,75,888,75,1.5,"var(--amber)")+sLine(872,180,888,180,1.5,"var(--amber)")+
+   sTxt(896,132,'4″',"start")+
+   sTxt(340,220,"fence-insulator tube spreader","middle",16)+
+   sTxt(340,244,"UV wire tie looped THROUGH the tube, around the wire — top & bottom","middle",15)+
+   sMut(120,52,"spreader every 18–24″","start",15)+
+  "</svg>";
+  $("llSteps").innerHTML=`
+   <h3>Parts</h3><p>Tractor Supply <span class="num">American Farm Works 4″ tube insulators, 200-pk (HTF25-AFW)</span> or equivalent · two runs of your antenna wire · black <b>UV-rated</b> cable ties (the cheap clear ones die in one summer).</p>
+   <h3>Assembly</h3><p>1) Stretch both wires side-by-side under light tension. 2) Every <span class="num">18–24″</span>, slide a tube insulator between them. 3) Loop a UV tie <b>through the tube bore and around the wire</b>, snug — one at each end of the tube. The wire must not slide, the tube must not migrate. 4) Give the finished line a gentle <span class="num">half-twist every ~3 ft</span> when hanging — it sheds wind-galloping. 5) Keep the line <span class="num">≥ 8″</span> (2× spacing) off metal, gutters, and siding; cross windows, not walls.</p>
+   <h3>Weather notes</h3><p>Open line barely notices rain (unlike window line's wet-loss spike). Ice is the enemy of spreaders, not electrons — tension modestly and let it swing.</p>`;
+  const spacings=[[2,"easier around standoffs, lower Z₀ suits 4:1 baluns"],[3,"good compromise"],[4,"★ the fence-insulator sweet spot"],[6,"marginal loss gain, more wind twist"]];
+  $("llSpace").innerHTML="<tr><th>Spacing</th><th>Z₀ (your wire)</th><th>Notes</th></tr>"+
+    spacings.map(([s,n])=>`<tr><td class="num">${s}″</td><td class="num">${(ladderZ0(s,d)*(insul?0.93:1)).toFixed(0)} Ω</td><td style="font-size:13.5px">${n}</td></tr>`).join("");
+  /* lengths to avoid: n·λ/2·VF re-presents the antenna's extreme Z to the tuner */
+  const bands=[[3.6,"80 m"],[7.15,"40 m"],[14.2,"20 m"],[21.3,"15 m"],[28.4,"10 m"]];
+  $("llAvoid").innerHTML="<tr><th>Band</th><th>Avoid ± 8 % around</th></tr>"+
+    bands.map(([f,n])=>{
+      const h=491.8*vf/f;
+      return `<tr><td>${n}</td><td class="num">${[1,2,3].map(k=>ftS(k*h,0)).join("  ·  ")}</td></tr>`;
+    }).join("");
+  $("llAvoidNote").textContent="Physics: at exact multiples of an electrical half-wave, the line repeats the antenna's feed impedance — which for an off-resonance doublet can be thousands of ohms reactive, outside any tuner. Pick a length clear of every row above (odd eighth-waves of your lowest band are a classic safe harbor), or simply add/remove 6–8 ft if the tuner ever growls on one band.";
+}
+
+/* ---------- Random-wire length lists ---------- */
+const RW_RANDOM=[29,35.5,41,58,71,84,107,119,148,203,347];   // dodge λ/2 on all HF bands (VE3EED family)
+const RW_RESONANT=[["33 ft — 20/10 m",33],["49 ft — 30 m + up",49.2],["66 ft — 40/20/15/10 m",65.5],["130 ft — 80 through 10 m",130.9]];
+let _rwLast="";
+function populateRwLens(span){
+  const ratio=$("rwUnun").value, sel=$("rwLen");
+  const key=ratio+"|"+span;
+  if(_rwLast===key && sel.options.length) return;
+  _rwLast=key;
+  const prev=sel.value;
+  sel.innerHTML="";
+  if(ratio==="9"){
+    RW_RANDOM.forEach(L=>{
+      const o=document.createElement("option");
+      o.value=L; o.textContent=L+" ft"+(L<=span?"  ✓ fits your span":"  (needs "+L+" ft — bendable)");
+      sel.appendChild(o);
+    });
+    sel.value = RW_RANDOM.filter(L=>L<=span).pop() || RW_RANDOM[0];
+    $("rwHint").textContent="These specific lengths (the VE3EED family) avoid landing on a half-wave of ANY HF band, keeping the end impedance inside your tuner's range everywhere.";
+  }else{
+    RW_RESONANT.forEach(([n,L])=>{
+      const o=document.createElement("option");
+      o.value=L; o.textContent=n+(L<=span?"  ✓ fits":"");
+      sel.appendChild(o);
+    });
+    sel.value = (RW_RESONANT.filter(([n,L])=>L<=span).pop()||RW_RESONANT[2])[1];
+    $("rwHint").textContent="Resonant half-wave lengths — the wire itself does the matching at ≈"+(50*ratio)+" Ω, so no tuner is needed on the design bands.";
+  }
+  if([...sel.options].some(o=>o.value===prev)) sel.value=prev;
+}
+
 /* ---------- Saved site (yard) profile ---------- */
 let sitePersist=false;   // only auto-save once a profile exists (saved dialog or prior visit)
 const siteStore = {
@@ -1738,6 +2579,11 @@ function recalc(){
   if(!vhfOK && ["jpole","slimjim","gp58","moxon"].includes(type)){
     $("atype").value="dipole"; type="dipole";
   }
+  $("yagiExtra").style.display = type==="yagi3"?"block":"none";
+  $("lpdaExtra").style.display = type==="lpda"?"block":"none";
+  $("rwExtra").style.display = type==="randwire"?"block":"none";
+  if(type==="randwire") populateRwLens(Math.max(parseFloat($("span").value)||1,1));
+  $("quadExtra").style.display = type==="quad"?"block":"none";
   $("jExtra").style.display = (type==="jpole"||type==="slimjim")?"block":"none";
   $("vertExtra").style.display = type==="vert"?"block":"none";
   if(type==="vert" && $("vertMount").value==="elevated") type="gp";
@@ -1776,7 +2622,11 @@ function recalc(){
   const p={freq,type,matK:mat.k,dCorr,span,height,power,duty,
     fan2:parseFloat($("fan2").value)||0, fan3:parseFloat($("fan3").value)||0,
     invvAngle:parseFloat($("invvAngle").value)||120,
-    loopFeed:$("loopFeed").value, jconstr:$("jConstr").value};
+    loopFeed:$("loopFeed").value, jconstr:$("jConstr").value,
+    quadEls:parseInt($("quadEls").value)||2, yagiEls:parseInt($("yagiEls").value)||3,
+    rwUnun:$("rwUnun").value, rwLen:parseFloat($("rwLen").value)||0,
+    lpLow:parseFloat($("lpLow").value)||14, lpHigh:parseFloat($("lpHigh").value)||30,
+    lpTau:parseFloat($("lpTau").value)||0.88, lpSigma:parseFloat($("lpSigma").value)||0.05};
   const D=designAntenna(p);
 
   /* dims */
@@ -1803,6 +2653,24 @@ function recalc(){
 
   /* schematic */
   $("schematic").innerHTML=D.schematic;
+
+  /* baluns + ladder line tabs (live with power/mode/wire) */
+  buildBalunsTab(power,duty,($("mode").selectedOptions[0]||{}).textContent?.split(" — ")[0]||"SSB");
+  buildLadderTab(freq,$("gauge").value,$("material").value,flen);
+
+  /* LPDA cut table */
+  if(D.lpda){
+    $("lpdaCard").style.display="block";
+    let pos=0;
+    $("lpdaTable").innerHTML="<tr><th>#</th><th>Element length</th><th>Position from rear</th><th>Gap to next</th></tr>"+
+      D.lpda.lens.map((L,i)=>{
+        const row=`<tr><td>${i+1}${i===0?" (REF end)":i===D.lpda.N-1?" (feed end)":""}</td><td class="num">${ftIn(L)}</td><td class="num">${ftIn(pos)}</td><td class="num">${i<D.lpda.gaps.length?ftIn(D.lpda.gaps[i]):"—"}</td></tr>`;
+        pos+=D.lpda.gaps[i]||0; return row;
+      }).join("");
+  }else $("lpdaCard").style.display="none";
+
+  /* matching network tab */
+  buildMatchingTab(D,p,fl,flen);
 
   /* radial system */
   if(D.radialPlan){
@@ -1881,7 +2749,7 @@ function recalc(){
 
 /* ---------- Events ---------- */
 $("band").addEventListener("change",e=>{$("freq").value=e.target.value;recalc();});
-["freq","atype","span","height","material","gauge","fline","flen","dia","invvAngle","loopFeed","fan2","fan3","vertMount","ground","power","mode","swrIn","jConstr"]
+["freq","atype","span","height","material","gauge","fline","flen","dia","invvAngle","loopFeed","fan2","fan3","vertMount","ground","power","mode","swrIn","jConstr","quadEls","yagiEls","lpLow","lpHigh","lpTau","lpSigma","rwUnun","rwLen"]
   .forEach(id=>$(id).addEventListener("input",recalc));
 /* tabs */
 let curTab="build";
