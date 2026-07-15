@@ -1414,14 +1414,15 @@ function svgInvV(L,leg,ang){
   const droop=(180-ang)/2*Math.PI/180;
   const dx=330*Math.cos(droop), dy=330*Math.sin(droop);
   const spanFt=L*Math.cos(droop);
-  return S_HEAD+
+  const dimY=70+dy+42, mastY=Math.max(250,dimY+34);   // mast label always clear below the span dimension
+  return '<svg class="schematic" viewBox="0 0 920 '+Math.round(mastY+20)+'" xmlns="http://www.w3.org/2000/svg" role="img">'+
    sLine(460,70,460-dx,70+dy)+sLine(460,70,460+dx,70+dy)+
    sFeed(460,70)+sIns(460-dx-5,70+dy)+sIns(460+dx+5,70+dy)+
-   sLine(460,77,460,250,2,"var(--muted)")+sMut(510,250,"mast / feed line",'start')+
+   sLine(460,77,460,mastY-14,2,"var(--muted)")+sMut(510,mastY,"mast / feed line",'start')+
    sTxt(460,48,ang+"° included angle")+
    sTxt(460-dx/2-45,70+dy/2,"leg "+ftIn(leg),"end")+
    sTxt(460+dx/2+45,70+dy/2,"leg "+ftIn(leg),"start")+
-   sDim(460-dx,460+dx,70+dy+42,"span "+ftIn(spanFt))+
+   sDim(460-dx,460+dx,dimY,"span "+ftIn(spanFt))+
   "</svg>";
 }
 function svgEFHW(L,cp){
@@ -1438,12 +1439,12 @@ function svgEFHW(L,cp){
 function svgFan(Ls){
   let out=S_HEAD+sFeed(460,95)+sLine(460,102,460,240,2,"var(--muted)")+sMut(460,262,"common feed ↓");
   Ls.forEach((L,i)=>{
-    const half=Math.max(120,350*(L/Ls[0]));
+    const half=Math.max(100,300*(L/Ls[0]));   // capped so the longest element's labels still clear the canvas edge
     const y=95+i*45;
     out+=sLine(460,95,460-half,y+20)+sLine(460,95,460+half,y+20)+
          sIns(460-half-5,y+20)+sIns(460+half+5,y+20)+
-         sTxt(460+half-20,y+42,"total "+ftIn(L),"end",18)+
-         sTxt(460-half+20,y+42,"leg "+ftIn(L/2),"start",18);
+         sTxt(460+half+10,y+38,"total "+ftIn(L),"start",16)+
+         sTxt(460-half-10,y+38,"leg "+ftIn(L/2),"end",16);
   });
   out+=sMut(140,40,"elements fan out 2–4 ft apart at the ends",'start');
   return out+"</svg>";
@@ -1452,7 +1453,7 @@ function svgLoop(side,fp){
   const x=310,y=45,s=210;
   const fx = fp==="bottom"?x+s/2 : fp==="side"?x : x;
   const fy = fp==="bottom"?y+s : fp==="side"?y+s/2 : y+s;
-  return S_HEAD+
+  return '<svg class="schematic" viewBox="0 0 920 340" xmlns="http://www.w3.org/2000/svg" role="img">'+
    `<rect x="${x}" y="${y}" width="${s}" height="${s}" fill="none" stroke="var(--text)" stroke-width="3"/>`+
    sFeed(fx,fy)+
    sLine(fx,fy+7,fx,fy+55,2,"var(--muted)")+sMut(fx,fy+75,"feed line ↓")+
@@ -1483,16 +1484,17 @@ function svgVert(Rl,rad,elev){
   return out+"</svg>";
 }
 function svgYagiN(n,lens,spacings,boom){
-  const cy=150, x0=140, xSpan=640;
+  const cy=190, x0=140, xSpan=640, hMax=104;
   const totS=spacings.reduce((a,b)=>a+b,0)||1;
   const xs=[x0]; spacings.forEach(s=>xs.push(xs[xs.length-1]+xSpan*(s/totS)));
-  const lMax=Math.max(...lens), hMax=104;
+  const lMax=Math.max(...lens);
   const names=["REF","DE"].concat(Array.from({length:n-2},(_,i)=>"D"+(i+1)));
-  let out=S_HEAD+sLine(x0-36,cy,xs[xs.length-1]+36,cy,4);
+  let out='<svg class="schematic" viewBox="0 0 920 '+(cy+hMax+90)+'" xmlns="http://www.w3.org/2000/svg" role="img">'+
+    sLine(x0-36,cy,xs[xs.length-1]+36,cy,4);
   lens.forEach((L,i)=>{
     const h=Math.max(58,hMax*(L/lMax)), x=xs[i];
     out+=sLine(x,cy-h,x,cy+h,4);
-    const yLab = (i%2===0)? cy-h-12 : cy-h-38;   // alternate label lanes
+    const yLab = (i%2===0)? cy-h-12 : cy-h-38;   // alternate label lanes — cy now has headroom for both
     out+=sTxt(x,yLab,names[i]+" "+ftIn(L),"middle",18);
     if(i===1) out+=sFeed(x,cy);
   });
@@ -1792,36 +1794,39 @@ function svgJPole(lng,stub,sp,tap){
   "</svg>";
 }
 function svgSlimJim(tot,half,stub,sp,gap,tap){
-  const x1=400,x2=470,yt=42,yb=252;
+  const x1=400,x2=470,yt=42,yb=232;
   const yGap=yb-(yb-yt)*(stub/tot);
   const yTraw=(yb-yt)*(tap/tot), clamped=yTraw<16;
   const yT=yb-Math.max(yTraw,16);
-  return S_HEAD+
+  /* the ¼λ-match dimension text sits tight to the drawing, ABOVE the gap-to-bottom
+     midpoint; the feed-connection detail gets its OWN open row well below the whole
+     antenna, so the two label groups never compete for the same strip. */
+  return '<svg class="schematic" viewBox="0 0 920 380" xmlns="http://www.w3.org/2000/svg" role="img">'+
    sLine(x1,yt,x1,yb,5)+
    sLine(x2,yt,x2,yGap-9,5)+sLine(x2,yGap+9,x2,yb,5)+
    sLine(x1,yt,x2,yt,5)+sLine(x1,yb,x2,yb,5)+
-   /* coax splits: CENTER → gap side, SHIELD → solid side */
-   sLine((x1+x2)/2,yb+34,(x1+x2)/2,yT+16,3,"var(--muted)")+
-   sLine((x1+x2)/2,yT+16,x2,yT,3,"var(--amber)")+
-   sLine((x1+x2)/2,yT+16,x1,yT,3,"var(--muted)","6 4")+
-   `<circle cx="${x2}" cy="${yT}" r="6" fill="var(--amber)"/>`+
-   `<circle cx="${x1}" cy="${yT}" r="6" fill="none" stroke="var(--muted)" stroke-width="3"/>`+
-   sTxt(x2+18,yT-14,"CENTER conductor","start",18)+
-   sTxt(x2+18,yT+10,"→ gap side","start",17)+
-   sTxt(x1-16,yT-14,"SHIELD (braid)","end",18)+
-   sTxt(x1-16,yT+10,"→ solid side","end",17)+
-   sMut((x1+x2)/2+14,yb+30,"50 Ω coax ↓","start")+
-   /* tap-height dimension, far-left lane */
+   sTxt(x1-16,yt+22,"total "+ftIn(tot),"end")+
+   sTxt(x2+18,(yt+yGap)/2-10,"½ λ radiator","start",18)+
+   sTxt(x2+18,(yt+yGap)/2+16,ftIn(half),"start")+
+   sTxt(x2+18,yGap-8,"gap "+ftIn(gap),"start",18)+
+   sTxt(x2+18,(yGap+yb)/2+8,"¼ λ match","start",18)+
+   sTxt(x2+18,(yGap+yb)/2+34,ftIn(stub),"start")+
+   /* tap-height dimension, far-left lane, clear of everything else */
    sLine(120,yb,120,yT,1.5,"var(--amber)")+
    sLine(112,yb,128,yb,1.5,"var(--amber)")+sLine(112,yT,128,yT,1.5,"var(--amber)")+
    sTxt(120,yT-14,"tap "+ftIn(tap)+(clamped?" *":""),"middle",18)+
-   (clamped?sMut(120,yb+26,"*tap drawn enlarged","middle",15):"")+
-   sTxt(x1-16,yt+22,"total "+ftIn(tot),"end")+
-   sTxt(x2+18,(yt+yGap)/2-40,"½ λ radiator","start",18)+
-   sTxt(x2+18,(yt+yGap)/2-14,ftIn(half),"start")+
-   sTxt(x2+18,yGap+5,"gap "+ftIn(gap),"start",18)+
-   sTxt(x2+18,(yGap+yT)/2-2,"¼ λ match","start",18)+
-   sTxt(x2+18,(yGap+yT)/2+24,ftIn(stub),"start")+
+   (clamped?sMut(120,yT-34,"*tap drawn enlarged","middle",15):"")+
+   /* feed connection point on the drawing itself — just the dot, no text crowding it */
+   `<circle cx="${x2}" cy="${yT}" r="6" fill="var(--amber)"/>`+
+   `<circle cx="${x1}" cy="${yT}" r="6" fill="none" stroke="var(--muted)" stroke-width="3"/>`+
+   /* leads drop straight down, clear of the core, THEN run out to a dedicated open row */
+   sLine(x2,yT,x2,320,3,"var(--amber)")+`<circle cx="${x2}" cy="320" r="5" fill="var(--amber)"/>`+
+   sLine(x1,yT,x1,320,3,"var(--muted)","6 4")+`<circle cx="${x1}" cy="320" r="5" fill="none" stroke="var(--muted)" stroke-width="2.5"/>`+
+   sTxt(x2+18,314,"CENTER conductor","start",18)+
+   sTxt(x2+18,338,"→ gap side","start",17)+
+   sTxt(x1-16,314,"SHIELD (braid)","end",18)+
+   sTxt(x1-16,338,"→ solid side","end",17)+
+   sMut(x1-90,248,"50 Ω","end")+sMut(x1-90,268,"coax ↓","end")+
   "</svg>";
 }
 function svgGP58(R,rad){
@@ -1856,48 +1861,58 @@ function svgMoxon(A,B,C,Dd){
 }
 
 function svgQuad(n,circs,spacings,boom){
-  const cy=138, x0=150, xSpan=620;
+  const cy=178, x0=150, xSpan=620, hMax=92;
   const totS=spacings.reduce((a,b)=>a+b,0)||1;
-  /* diamond half-heights scaled to largest loop */
-  const hMax=92, cMax=Math.max(...circs);
+  const cMax=Math.max(...circs);
   const xs=[x0]; spacings.forEach(s=>xs.push(xs[xs.length-1]+xSpan*(s/totS)));
-  let out=S_HEAD+sLine(x0-36,cy,xs[xs.length-1]+36,cy,4);
+  let out='<svg class="schematic" viewBox="0 0 920 '+(cy+hMax+110)+'" xmlns="http://www.w3.org/2000/svg" role="img">'+
+    sLine(x0-36,cy,xs[xs.length-1]+36,cy,4);
   const names=["REF","DE"].concat(Array.from({length:n-2},(_,i)=>"D"+(i+1)));
   circs.forEach((c,i)=>{
     const h=hMax*(c/cMax), x=xs[i];
     out+=`<path d="M ${x} ${cy-h} L ${x+h*0.55} ${cy} L ${x} ${cy+h} L ${x-h*0.55} ${cy} Z" fill="none" stroke="var(--text)" stroke-width="4"/>`;
-    out+=sTxt(x,cy-h-12,names[i]+" "+ftIn(c));
-    if(names[i]==="DE") out+=sFeed(x,cy+h)+sMut(x,cy+h+24,"feed ↓");
+    const yLab = (i%2===0)? cy-h-12 : cy-hMax-36;   // alternate lanes — REF/DE sit far too close together to share one
+    out+=sTxt(x,yLab,names[i]+" "+ftIn(c));
+    if(names[i]==="DE") out+=sFeed(x,cy+h)+sMut(x,cy+hMax+54,"feed ↓");
   });
   spacings.forEach((s,i)=>{
     out+=sMut((xs[i]+xs[i+1])/2,cy+hMax+30,ftIn(s));
   });
-  out+=sMut(x0+xSpan/2,cy+hMax+58,"boom "+ftIn(boom));
+  out+=sMut(x0+xSpan/2,cy+hMax+78,"boom "+ftIn(boom));
   out+=`<path d="M ${xs[xs.length-1]+60} ${cy} l 50 0 m -12 -9 l 12 9 l -12 9" stroke="var(--good)" stroke-width="2.5" fill="none"/>`+
        sMut(xs[xs.length-1]+85,cy-16,"fwd");
   return out+"</svg>";
 }
 
 function svgLPDA(lens,gaps,boom,fL,fH){
-  const cy=150, x0=130, xSpan=650, N=lens.length;
+  const cy=170, x0=130, xSpan=650, N=lens.length;
   const show=Math.min(N,8);
   const idx=Array.from({length:show},(_,i)=>Math.round(i*(N-1)/(show-1)));
   const totS=gaps.reduce((a,b)=>a+b,0)||1;
   const pos=[0]; gaps.forEach(g=>pos.push(pos[pos.length-1]+g));
   const hMax=100, lMax=lens[0];
-  let out=S_HEAD+sLine(x0-24,cy-7,x0+xSpan+24,cy-7,3)+sLine(x0-24,cy+7,x0+xSpan+24,cy+7,3);
+  let out='<svg class="schematic" viewBox="0 0 920 '+(cy+hMax+90)+'" xmlns="http://www.w3.org/2000/svg" role="img">'+
+    sLine(x0-24,cy-7,x0+xSpan+24,cy-7,3)+sLine(x0-24,cy+7,x0+xSpan+24,cy+7,3);
+  /* draw every sampled element as an unlabeled tick for the taper silhouette... */
   idx.forEach((i,j)=>{
     const x=x0+xSpan*(pos[i]/pos[N-1]);
     const h=Math.max(26,hMax*(lens[i]/lMax));
     out+=sLine(x,cy-h,x,cy+h,4);
-    if(j%2===0) out+=sTxt(x,cy-h-12,ftIn(lens[i]),"middle",16);
-    else out+=sTxt(x,cy+h+22,ftIn(lens[i]),"middle",16);
   });
-  out+=sTxt(x0-40,cy-hMax-14,"rear · "+fL+" MHz","start",17)+
-       sTxt(x0+xSpan+52,cy-56,"front","start",17)+
-       sTxt(x0+xSpan+52,cy-32,fH+" MHz","start",16)+
-       sTxt(x0+xSpan+52,cy-10,"· feed","start",16)+
-       sMut(x0+xSpan/2,cy+hMax+52,"boom "+ftIn(boom)+" — feeder transposes between elements")+
+  /* ...then explicitly LABEL only 3: longest, one middle, shortest — guaranteed
+     spacing regardless of how tightly the geometric taper packs the rest.
+     Every element's exact length is in the cut table below anyway. */
+  const labelJ=[0, Math.floor((show-1)/2), show-1];
+  const lanes=[cy-hMax-12, cy+hMax+26, cy-hMax-12];
+  labelJ.forEach((j,k)=>{
+    const i=idx[j], x=x0+xSpan*(pos[i]/pos[N-1]);
+    out+=sTxt(x,lanes[k],ftIn(lens[i]),"middle",16);
+  });
+  out+=sTxt(20,cy-hMax-40,"rear · "+fL+" MHz","start",17)+
+       sTxt(x0+xSpan+52,cy-70,"front","start",17)+
+       sTxt(x0+xSpan+52,cy-46,fH+" MHz","start",16)+
+       sTxt(x0+xSpan+52,cy-24,"· feed","start",16)+
+       sMut(x0+xSpan/2,cy+hMax+58,"boom "+ftIn(boom)+" — feeder transposes between elements")+
        `<path d="M ${x0+xSpan+50} ${cy+30} l 44 0 m -11 -8 l 11 8 l -11 8" stroke="var(--good)" stroke-width="2.5" fill="none"/>`+
        sMut(x0+xSpan+72,cy+56,"fwd");
   return out+"</svg>";
@@ -1911,7 +1926,8 @@ function svgRandWire(L,ratio,cp){
    sLine(155,147,155,225,2,"var(--muted)")+sMut(155,250,"coax + choke ↓")+
    sLine(120,121,52,180,2.5)+
    sTxt(200,205,"counterpoise "+ftIn(cp),"start",18)+
-   sMut(700,180,"sloper / bent runs are fine — keep the first third straight","middle",15)+
+   sMut(460,225,"Slopers or bends are fine —","middle",15)+
+   sMut(460,246,"just keep the first third of the run straight","middle",15)+
   "</svg>";
 }
 
