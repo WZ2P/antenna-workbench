@@ -1571,18 +1571,19 @@ function drawSWR(f0, bwMHz){
   const MUT=css.getPropertyValue("--muted").trim(), BG=css.getPropertyValue("--scope-bg").trim();
   const WARN=css.getPropertyValue("--warn").trim();
   const [fa,fb]=bandEdges(f0);
-  const px=f=>40+(f-fa)/(fb-fa)*(W-60);
+  const LM=58;   // left margin — wide enough for "1.5:1", the longest y-axis label
+  const px=f=>LM+(f-fa)/(fb-fa)*(W-LM-20);
   const py=s=>H-26-(Math.min(s,6)-1)/5*(H-52);
   ctx.fillStyle=BG;ctx.fillRect(0,0,W,H);
   ctx.strokeStyle=GRID;ctx.fillStyle=MUT;ctx.font="15px 'Share Tech Mono',monospace";
   [1.5,2,3,5].forEach(s=>{
-    ctx.beginPath();ctx.moveTo(40,py(s));ctx.lineTo(W-20,py(s));ctx.stroke();
-    ctx.textAlign="right";ctx.fillText(s+":1",36,py(s)+4);
+    ctx.beginPath();ctx.moveTo(LM,py(s));ctx.lineTo(W-20,py(s));ctx.stroke();
+    ctx.textAlign="right";ctx.fillText(s+":1",LM-6,py(s)+4);
   });
   ctx.strokeStyle=WARN;ctx.setLineDash([5,5]);
-  ctx.beginPath();ctx.moveTo(40,py(2));ctx.lineTo(W-20,py(2));ctx.stroke();ctx.setLineDash([]);
+  ctx.beginPath();ctx.moveTo(LM,py(2));ctx.lineTo(W-20,py(2));ctx.stroke();ctx.setLineDash([]);
   ctx.textAlign="center";
-  ctx.fillText(fa.toFixed(fa<50?3:1),60,H-8);ctx.fillText(fb.toFixed(fb<50?3:1),W-40,H-8);
+  ctx.fillText(fa.toFixed(fa<50?3:1),LM+20,H-8);ctx.fillText(fb.toFixed(fb<50?3:1),W-40,H-8);
   ctx.fillText("MHz",W/2,H-8);
   /* trace */
   ctx.save();ctx.strokeStyle=AMB;ctx.lineWidth=2.5;ctx.shadowColor=AMB;ctx.shadowBlur=10;
